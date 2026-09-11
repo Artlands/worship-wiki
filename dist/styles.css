@@ -384,7 +384,7 @@ h1, h2 { font-family: var(--serif); }
   text-align: center;
 }
 .site-footer strong { margin-right: 6px; color: var(--ink); }
-.site-footer .footer-contact { margin-top: 6px; }
+.site-footer p + p { margin-top: 6px; }
 .site-footer a { color: var(--gold); }
 
 @media (prefers-reduced-motion: reduce) {
