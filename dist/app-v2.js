@@ -437,7 +437,7 @@ const elements = {
   totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
   fontSizeInput: $("#fontSizeInput"), saveState: $("#saveState"), toast: $("#toast"),
   exportDialog: $("#exportDialog"), exportSlideCount: $("#exportSlideCount"), guideDialog: $("#guideDialog"),
-  languageSelect: $("#languageSelect"), accountButton: $("#accountButton"), accountLabel: $("#accountLabel"),
+  languageButtons: $$('[data-language]'), accountButton: $("#accountButton"), accountLabel: $("#accountLabel"),
   accessDialog: $("#accessDialog"), accessStatus: $("#accessStatus"), accessStatusTitle: $("#accessStatusTitle"),
   accessStatusText: $("#accessStatusText"), googleSignInButton: $("#googleSignInButton"),
   requestAccessButton: $("#requestAccessButton"), leaveEditModeButton: $("#leaveEditModeButton"),
@@ -454,7 +454,9 @@ function translateInterface() {
   $$('[data-i18n]').forEach((element) => { element.textContent = t(element.dataset.i18n); });
   $$('[data-i18n-aria]').forEach((element) => { element.setAttribute("aria-label", t(element.dataset.i18nAria)); });
   $$('[data-i18n-placeholder]').forEach((element) => { element.placeholder = t(element.dataset.i18nPlaceholder); });
-  elements.languageSelect.value = state.locale;
+  elements.languageButtons.forEach((button) => {
+    button.setAttribute("aria-pressed", String(button.dataset.language === state.locale));
+  });
   renderAccessState();
 }
 
@@ -1427,13 +1429,14 @@ elements.accountButton.addEventListener("click", () => elements.accessDialog.sho
 elements.googleSignInButton.addEventListener("click", signInWithGoogle);
 elements.requestAccessButton.addEventListener("click", requestEditorAccess);
 elements.leaveEditModeButton.addEventListener("click", leaveEditMode);
-elements.languageSelect.addEventListener("change", (event) => {
-  state.locale = event.target.value;
+elements.languageButtons.forEach((button) => button.addEventListener("click", () => {
+  if (button.dataset.language === state.locale) return;
+  state.locale = button.dataset.language;
   translateInterface();
   renderPreview();
   scheduleSave();
   showToast(t("languageChanged"));
-});
+}));
 function activateNav(button, panel, field) {
   $$(".nav-link").forEach((link) => link.classList.toggle("active", link === button));
   // Panels sit side by side on wide screens and stack on narrow ones, so scroll
