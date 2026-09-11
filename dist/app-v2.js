@@ -95,6 +95,8 @@ const translations = {
     cloudLoadFailed: "暂时无法读取云端曲库，已保留本地内容", cloudSaveFailed: "云端保存失败，请检查网络或权限",
     cloudSaved: "已同步到 Google Sheet", editorRequired: "只有受邀编辑者可以修改歌词",
     deleteSong: "删除诗歌", confirmDelete: "确定删除《{title}》吗？此操作无法撤销。", songDeleted: "诗歌已删除",
+    saveToCloud: "保存到云端", savingToCloud: "正在保存…", allSynced: "已保存", nothingToSave: "没有需要保存的修改",
+    cloudUnsaved: "云端曲库 · 有未保存的修改",
     requestUnavailable: "管理员邮箱尚未配置", accessRequestSubject: "申请加入敬拜百科编辑团队",
     accessRequestBody: "你好，我希望使用以下 Google 账号加入敬拜百科编辑团队：\n\n{email}\n\n请在 Google Sheet 中邀请此账号为编辑者。谢谢！"
   },
@@ -149,6 +151,8 @@ const translations = {
     cloudLoadFailed: "暫時無法讀取雲端曲庫，已保留本機內容", cloudSaveFailed: "雲端儲存失敗，請檢查網路或權限",
     cloudSaved: "已同步到 Google Sheet", editorRequired: "只有受邀編輯者可以修改歌詞",
     deleteSong: "刪除詩歌", confirmDelete: "確定刪除《{title}》嗎？此操作無法復原。", songDeleted: "詩歌已刪除",
+    saveToCloud: "儲存到雲端", savingToCloud: "正在儲存…", allSynced: "已儲存", nothingToSave: "沒有需要儲存的修改",
+    cloudUnsaved: "雲端曲庫 · 有未儲存的修改",
     requestUnavailable: "管理員電子郵件尚未設定", accessRequestSubject: "申請加入敬拜百科編輯團隊",
     accessRequestBody: "你好，我希望使用以下 Google 帳號加入敬拜百科編輯團隊：\n\n{email}\n\n請在 Google Sheet 中邀請此帳號為編輯者。謝謝！"
   },
@@ -203,6 +207,8 @@ const translations = {
     cloudLoadFailed: "The cloud library is unavailable. Local content is still available.", cloudSaveFailed: "Cloud save failed. Check your connection or access.",
     cloudSaved: "Synced to Google Sheets", editorRequired: "Only invited editors can change lyrics",
     deleteSong: "Delete song", confirmDelete: "Delete \"{title}\"? This cannot be undone.", songDeleted: "Song deleted",
+    saveToCloud: "Save to cloud", savingToCloud: "Saving…", allSynced: "Saved", nothingToSave: "No unsaved changes",
+    cloudUnsaved: "Cloud library · Unsaved changes",
     requestUnavailable: "The administrator email has not been configured", accessRequestSubject: "Request to join the Worship Wiki editing team",
     accessRequestBody: "Hello, I would like to join the Worship Wiki editing team using this Google account:\n\n{email}\n\nPlease invite this account as an editor in Google Sheets. Thank you!"
   }
@@ -252,7 +258,7 @@ const backend = {
   userEmail: "",
   tokenClient: null,
   dirtySongIds: new Set(),
-  remoteSaveTimers: new Map(),
+  saving: false,
   syncTimer: null
 };
 
@@ -272,7 +278,8 @@ const elements = {
   accessStatusText: $("#accessStatusText"), googleSignInButton: $("#googleSignInButton"),
   requestAccessButton: $("#requestAccessButton"), leaveEditModeButton: $("#leaveEditModeButton"),
   adminContact: $("#adminContact"), adminEmailLink: $("#adminEmailLink"),
-  editorPanel: $(".editor-panel"), newSongButton: $("#newSongButton")
+  editorPanel: $(".editor-panel"), newSongButton: $("#newSongButton"),
+  saveSongButton: $("#saveSongButton")
 };
 
 function translateInterface() {
@@ -287,11 +294,20 @@ function translateInterface() {
 }
 
 function refreshSaveState() {
+  const pending = backend.dirtySongIds.size;
   let key = "saved";
   if (backend.role === "checking") key = "cloudChecking";
-  else if (backend.role === "editor") key = backend.dirtySongIds.size ? "cloudSaving" : "cloudEditorReady";
+  else if (backend.role === "editor") key = backend.saving ? "cloudSaving" : pending ? "cloudUnsaved" : "cloudEditorReady";
   else if (backend.configured) key = "cloudReadOnly";
   elements.saveState.innerHTML = `<i></i> ${t(key)}`;
+
+  const button = elements.saveSongButton;
+  button.hidden = !backend.configured || backend.role !== "editor";
+  button.disabled = !pending || backend.saving;
+  const labelKey = backend.saving ? "savingToCloud" : pending ? "saveToCloud" : "allSynced";
+  button.firstElementChild.textContent = pending && !backend.saving
+    ? `${t("saveToCloud")} (${pending})`
+    : t(labelKey);
 }
 
 function renderAccessState() {
@@ -437,7 +453,7 @@ function updateSong(field, value, shouldRender = true) {
   if (field === "title") elements.breadcrumb.textContent = value || t("untitledSong");
   if (shouldRender) renderPreview();
   scheduleSave();
-  if (["title", "author", "lyrics"].includes(field)) scheduleRemoteSave(song.id);
+  if (["title", "author", "lyrics"].includes(field)) markSongDirty(song.id);
 }
 
 function showToast(message) {
@@ -721,7 +737,6 @@ async function saveSongRemote(songId) {
     song.updatedBy = backend.userEmail;
     song.version = values[8];
     backend.dirtySongIds.delete(songId);
-    backend.remoteSaveTimers.delete(songId);
     refreshSaveState();
   } catch (error) {
     console.warn("Cloud save failed", error);
@@ -740,10 +755,7 @@ async function deleteActiveSong() {
   const label = song.title || t("untitledSong");
   if (!window.confirm(t("confirmDelete").replace("{title}", label))) return;
 
-  // Drop any queued cloud write first, or it would re-create the row we are removing.
-  const pending = backend.remoteSaveTimers.get(song.id);
-  if (pending) window.clearTimeout(pending);
-  backend.remoteSaveTimers.delete(song.id);
+  // Drop the pending-save mark, or Save would re-create the row we are removing.
   backend.dirtySongIds.delete(song.id);
 
   state.songs = state.songs.filter((item) => item.id !== song.id);
@@ -769,14 +781,30 @@ async function deleteActiveSong() {
   }
 }
 
-function scheduleRemoteSave(songId = state.activeId) {
+// Edits stay local until the editor presses Save; this only records what is pending.
+function markSongDirty(songId = state.activeId) {
   if (!backend.configured || backend.role !== "editor" || !songId) return;
   backend.dirtySongIds.add(songId);
   refreshSaveState();
-  const previousTimer = backend.remoteSaveTimers.get(songId);
-  if (previousTimer) window.clearTimeout(previousTimer);
-  const timer = window.setTimeout(() => saveSongRemote(songId), 1200);
-  backend.remoteSaveTimers.set(songId, timer);
+}
+
+async function saveDirtySongs() {
+  if (!backend.configured || backend.role !== "editor") {
+    showToast(t("editorRequired"));
+    return;
+  }
+  if (!backend.dirtySongIds.size || backend.saving) {
+    if (!backend.saving) showToast(t("nothingToSave"));
+    return;
+  }
+  backend.saving = true;
+  refreshSaveState();
+  // Sequential: saveSongRemote() appends new rows and records the row number it
+  // got back, and parallel appends would race for the same row.
+  for (const songId of [...backend.dirtySongIds]) await saveSongRemote(songId);
+  backend.saving = false;
+  refreshSaveState();
+  if (!backend.dirtySongIds.size) showToast(t("cloudSaved"));
 }
 
 function setAccessRole(role) {
@@ -862,8 +890,6 @@ function leaveEditMode() {
   backend.accessToken = "";
   backend.userEmail = "";
   backend.dirtySongIds.clear();
-  backend.remoteSaveTimers.forEach((timer) => window.clearTimeout(timer));
-  backend.remoteSaveTimers.clear();
   setAccessRole("guest");
   elements.accessDialog.close();
 }
@@ -903,7 +929,7 @@ function createSong({ title = t("untitledSong"), author = "", lyrics = t("firstL
   renderLibrary();
   renderEditor();
   scheduleSave();
-  scheduleRemoteSave(id);
+  markSongDirty(id);
   return activeSong();
 }
 
@@ -942,7 +968,7 @@ $$('[data-theme]').forEach((button) => button.addEventListener("click", () => {
   activeSong().theme = state.theme;
   renderControls();
   scheduleSave();
-  scheduleRemoteSave(activeSong().id);
+  markSongDirty(activeSong().id);
 }));
 $("[data-action='decrease-font']").addEventListener("click", () => {
   state.fontSize = Math.max(32, state.fontSize - 2);
@@ -978,6 +1004,7 @@ elements.languageSelect.addEventListener("change", (event) => {
 $("[data-action='focus-library']").addEventListener("click", () => elements.search.focus());
 $("[data-action='show-guide']").addEventListener("click", () => elements.guideDialog.showModal());
 $("[data-action='delete-song']").addEventListener("click", () => void deleteActiveSong());
+elements.saveSongButton.addEventListener("click", () => void saveDirtySongs());
 $("[data-action='sort-songs']").addEventListener("click", () => {
   state.songs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   renderLibrary(elements.search.value);
@@ -993,7 +1020,12 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft" && event.altKey) $("#prevSlide").click();
   if (event.key === "ArrowRight" && event.altKey) $("#nextSlide").click();
 });
-window.addEventListener("beforeunload", saveNow);
+window.addEventListener("beforeunload", (event) => {
+  saveNow();
+  if (!backend.dirtySongIds.size) return;
+  event.preventDefault();
+  event.returnValue = "";
+});
 
 function registerWebMcpTools() {
   const context = document.modelContext;
@@ -1040,7 +1072,7 @@ function registerWebMcpTools() {
       activeSong().updatedAt = Date.now();
       renderEditor();
       saveNow();
-      scheduleRemoteSave(activeSong().id);
+      markSongDirty(activeSong().id);
       return { updated: true, id: activeSong().id, title: activeSong().title, slideCount: paginate(activeSong().lyrics).length };
     }
   });

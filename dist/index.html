@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#152a53" />
     <title>敬拜百科 · Worship Wiki</title>
-    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="./icon.svg?v=3" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=3" />
   </head>
   <body>
     <div class="app-shell">
@@ -92,11 +92,17 @@
         <section class="editor-panel" aria-label="歌词编辑器" data-i18n-aria="lyricsEditor">
           <div class="editor-topline">
             <div class="breadcrumb"><span data-i18n="library">曲库</span><b>/</b><strong id="breadcrumbTitle">诸天颂赞</strong></div>
-            <button class="more-button" type="button" data-action="delete-song" aria-label="删除诗歌" data-i18n-aria="deleteSong">
-              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2.6 4.2h10.8M6.4 4.2V2.6h3.2v1.6M4.2 4.2l.6 9.2h6.4l.6-9.2M6.6 6.9v3.8M9.4 6.9v3.8"/>
-              </svg>
-            </button>
+            <div class="editor-actions">
+              <button class="button button-primary save-song-button" id="saveSongButton" type="button" hidden>
+                <span data-i18n="saveToCloud">保存到云端</span>
+              </button>
+              <button class="danger-button" type="button" data-action="delete-song">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2.6 4.2h10.8M6.4 4.2V2.6h3.2v1.6M4.2 4.2l.6 9.2h6.4l.6-9.2M6.6 6.9v3.8M9.4 6.9v3.8"/>
+                </svg>
+                <span data-i18n="deleteSong">删除诗歌</span>
+              </button>
+            </div>
           </div>
 
           <div class="title-fields">
@@ -274,6 +280,6 @@
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-    <script src="./app-v2.js"></script>
+    <script src="./app-v2.js?v=3"></script>
   </body>
 </html>
