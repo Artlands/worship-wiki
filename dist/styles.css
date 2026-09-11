@@ -387,6 +387,7 @@ h1, h2 { font-family: var(--serif); }
 .site-footer p + p { margin-top: 6px; }
 .site-footer a { color: var(--gold); }
 
+
 @media (prefers-reduced-motion: reduce) {
   .search-box.is-pinged { animation: none; }
 }
@@ -677,6 +678,11 @@ kbd {
   text-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
 
+.slide-content .slide-author {
+  margin-top: .45em;
+  font-size: .42em;
+  font-weight: 500;
+}
 .theme-parchment .slide-content,
 .theme-snow .slide-content { text-shadow: none; }
 

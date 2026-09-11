@@ -126,7 +126,7 @@ const translations = {
     chooseExportDesc: "挑选画面主题，再生成 PPTX、Keynote 兼容文件或 PDF。",
     startCreating: "开始制作", emptyLibrary: "没有找到相关诗歌", untitledSong: "未命名诗歌",
     titleSlideLabel: "标题页", titleSlideName: "标题页：歌名",
-    titleSlideNameAuthor: "标题页：歌名与作者", titleSlideNone: "不显示标题页",
+    titleSlideNameAuthor: "标题页：歌名与作者", titleSlideNone: "不显示标题页", titleFontSizeLabel: "标题页字号",
     uncategorized: "未分类", pageShort: "{count}页", slidesCount: "{count} 张",
     lyricsStats: "{lines} 行 · {slides} 张幻灯片", emptyLyrics: "在左侧输入歌词",
     defaultFileName: "敬拜幻灯片", pptLoadError: "PowerPoint 组件尚未加载，请检查网络后重试。",
@@ -198,7 +198,7 @@ const translations = {
     chooseExportDesc: "挑選畫面主題，再產生 PPTX、Keynote 相容檔案或 PDF。",
     startCreating: "開始製作", emptyLibrary: "找不到相關詩歌", untitledSong: "未命名詩歌",
     titleSlideLabel: "標題頁", titleSlideName: "標題頁：歌名",
-    titleSlideNameAuthor: "標題頁：歌名與作者", titleSlideNone: "不顯示標題頁",
+    titleSlideNameAuthor: "標題頁：歌名與作者", titleSlideNone: "不顯示標題頁", titleFontSizeLabel: "標題頁字級",
     uncategorized: "未分類", pageShort: "{count}頁", slidesCount: "{count} 張",
     lyricsStats: "{lines} 行 · {slides} 張投影片", emptyLyrics: "在左側輸入歌詞",
     defaultFileName: "敬拜投影片", pptLoadError: "PowerPoint 元件尚未載入，請檢查網路後重試。",
@@ -270,7 +270,7 @@ const translations = {
     chooseExportDesc: "Pick a visual theme, then create a PPTX, Keynote-compatible file, or PDF.",
     startCreating: "Start creating", emptyLibrary: "No matching songs", untitledSong: "Untitled song",
     titleSlideLabel: "Title slide", titleSlideName: "Title slide: name",
-    titleSlideNameAuthor: "Title slide: name & author", titleSlideNone: "No title slide",
+    titleSlideNameAuthor: "Title slide: name & author", titleSlideNone: "No title slide", titleFontSizeLabel: "Title slide font size",
     uncategorized: "Uncategorized", pageShort: "{count}p", slidesCount: "{count} slides",
     lyricsStats: "{lines} lines · {slides} slides", emptyLyrics: "Enter lyrics on the left",
     defaultFileName: "Worship Slides", pptLoadError: "The PowerPoint exporter has not loaded. Check your connection and try again.",
@@ -383,6 +383,8 @@ const state = {
   font: storedState?.font === "sans" ? "sans" : "serif",
   caption: CAPTION_SPOTS.includes(storedState?.caption) ? storedState.caption : "bottom-left",
   titleSlide: TITLE_SLIDE_MODES.includes(storedState?.titleSlide) ? storedState.titleSlide : "title",
+  titleFontSize: Number.isFinite(storedState?.titleFontSize)
+    ? Math.min(120, Math.max(20, storedState.titleFontSize)) : 60,
   ratio: RATIOS[storedState?.ratio] ? storedState.ratio : "16:9",
   appearance: ["dark", "light"].includes(storedState?.appearance) ? storedState.appearance
     : (window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark"),
@@ -426,7 +428,7 @@ const elements = {
   title: $("#songTitle"), author: $("#songAuthor"), lyrics: $("#lyricsInput"),
   tags: $("#songTags"), tagSuggestions: $("#tagSuggestions"),
   fontSelect: $("#fontSelect"), captionSelect: $("#captionSelect"),
-  titleSlideSelect: $("#titleSlideSelect"),
+  titleSlideSelect: $("#titleSlideSelect"), titleFontSizeInput: $("#titleFontSizeInput"),
   ratioSelect: $("#ratioSelect"), aspectChip: $(".aspect-chip"),
   backgroundInput: $("#backgroundInput"), clearBackgroundButton: $("#clearBackgroundButton"),
   appearanceButton: $("#appearanceButton"), restoreCloudButton: $("#restoreCloudButton"),
@@ -561,7 +563,7 @@ function saveNow() {
       songs: state.songs, activeId: state.activeId, pagination: state.pagination,
       fontSize: state.fontSize, theme: state.theme, locale: state.locale,
       font: state.font, caption: state.caption, ratio: state.ratio,
-      titleSlide: state.titleSlide,
+      titleSlide: state.titleSlide, titleFontSize: state.titleFontSize,
       appearance: state.appearance
     }));
   } catch (error) {
@@ -644,12 +646,16 @@ function renderPreview() {
   const slides = slidePages(song);
   state.slideIndex = Math.min(state.slideIndex, slides.length - 1);
   const lines = slides[state.slideIndex] || [];
-  elements.slideContent.innerHTML = lines.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
-  elements.slideContent.style.fontSize = `${Math.max(14, state.fontSize / 1.65)}px`;
+  const showingTitle = state.slideIndex === 0 && hasTitlePage(song);
+  elements.slideContent.innerHTML = lines.map((line, index) =>
+    `<div${showingTitle && index > 0 ? ' class="slide-author"' : ""}>${escapeHtml(line)}</div>`).join("");
+  const previewSize = showingTitle ? state.titleFontSize : state.fontSize;
+  elements.slideContent.style.fontSize = `${Math.max(14, previewSize / 1.65)}px`;
   elements.slideTitle.textContent = slideCaption(song);
   elements.currentSlide.textContent = state.slideIndex + 1;
   elements.totalSlides.textContent = slides.length;
   if (document.activeElement !== elements.fontSizeInput) elements.fontSizeInput.value = state.fontSize;
+  if (document.activeElement !== elements.titleFontSizeInput) elements.titleFontSizeInput.value = state.titleFontSize;
   elements.exportSlideCount.textContent = t("slidesCount", { count: slides.length });
   const lineCount = String(song.lyrics || "").split("\n").filter((line) => line.trim()).length;
   elements.stats.textContent = t("lyricsStats", { lines: lineCount, slides: slides.length });
@@ -680,15 +686,23 @@ function sanitizeFileName(value) {
 
 // Shrink-to-fit used by both the raster export and the PowerPoint text boxes,
 // so an editable deck sizes its words the same way the preview did.
-function fitFontPx(context, lines, width, fontStack, scale = 1) {
-  let fontPx = Math.min(state.fontSize * 1.78, 98) * scale;
+function fitFontPx(context, lines, width, fontStack,
+                   { startPx, baseSize = state.fontSize, maxPx = 98, minPx = 46 } = {}) {
+  let fontPx = startPx ?? Math.min(baseSize * 1.78, maxPx);
   const maxTextWidth = width * 0.82;
   do {
     context.font = `700 ${fontPx}px ${fontStack}`;
     if (Math.max(...lines.map((line) => context.measureText(line).width), 0) <= maxTextWidth) break;
     fontPx -= 2;
-  } while (fontPx > 46);
+  } while (fontPx > minPx);
   return fontPx;
+}
+
+// The author sits under the name at a fixed ratio, but a long credit still has
+// to fit the frame, so it shrinks from there with a floor of its own.
+function fitAuthorPx(context, text, width, fontStack, namePx) {
+  return fitFontPx(context, [text], width, fontStack,
+    { startPx: Math.round(namePx * TITLE_AUTHOR_RATIO), minPx: 18 });
 }
 
 // PowerPoint needs one concrete face, not a CSS stack.
@@ -771,7 +785,9 @@ function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {
 
   if (isTitle) {
     const [name, ...rest] = lines;
-    const namePx = fitFontPx(context, [name], width, stack, TITLE_SCALE);
+    const namePx = fitFontPx(context, [name], width, stack,
+      { baseSize: state.titleFontSize, maxPx: TITLE_FONT_MAX_PX });
+    const credit = rest.join(" · ");
     const gap = namePx * 0.85;
     const nameY = rest.length ? height / 2 - gap / 2 : height / 2;
     context.textAlign = "center";
@@ -780,8 +796,8 @@ function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {
     context.font = `700 ${namePx}px ${stack}`;
     context.fillText(name, width / 2, nameY);
     if (rest.length) {
-      context.font = `500 ${Math.round(namePx * TITLE_AUTHOR_RATIO)}px ${stack}`;
-      context.fillText(rest.join(" · "), width / 2, nameY + gap);
+      context.font = `500 ${fitAuthorPx(context, credit, width, stack, namePx)}px ${stack}`;
+      context.fillText(credit, width / 2, nameY + gap);
     }
     context.shadowColor = "transparent";
     return canvas;
@@ -811,8 +827,9 @@ function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {
   return canvas;
 }
 
-// The title slide sets the song name against a quieter author line.
-const TITLE_SCALE = 1.35;
+// The title slide sets the song name against a quieter author line. Its size
+// is its own setting; the ceiling is the lyric cap scaled by the old 1.35.
+const TITLE_FONT_MAX_PX = 132;
 const TITLE_AUTHOR_RATIO = 0.42;
 
 const MAX_BACKGROUND_BYTES = 12 * 1024 * 1024;
@@ -904,10 +921,14 @@ async function exportPptx(fileName, keynoteCompatible = false) {
     if (isTitle) {
       // two runs in one box, so the name and the author keep their own sizes
       const [name, ...rest] = lines;
-      const namePx = fitFontPx(measure, [name], pxW, `"${fontFace}", sans-serif`, TITLE_SCALE);
+      const titleStack = `"${fontFace}", sans-serif`;
+      const namePx = fitFontPx(measure, [name], pxW, titleStack,
+        { baseSize: state.titleFontSize, maxPx: TITLE_FONT_MAX_PX });
+      const credit = rest.join(" · ");
       const runs = [{ text: name, options: { fontSize: Math.round(namePx * ptPerPx), bold: true, breakLine: rest.length > 0 } }];
       if (rest.length) {
-        runs.push({ text: rest.join(" · "), options: { fontSize: Math.round(namePx * TITLE_AUTHOR_RATIO * ptPerPx), bold: false } });
+        const authorPx = fitAuthorPx(measure, credit, pxW, titleStack, namePx);
+        runs.push({ text: credit, options: { fontSize: Math.round(authorPx * ptPerPx), bold: false } });
       }
       slide.addText(runs, {
         x: 0, y: 0, w: inW, h: inH,
@@ -1363,6 +1384,23 @@ function setFontSize(value) {
   renderPreview();
   scheduleSave();
 }
+
+function setTitleFontSize(value) {
+  const size = Math.round(Number(value));
+  if (!Number.isFinite(size)) return;
+  state.titleFontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, size));
+  renderPreview();
+  scheduleSave();
+}
+
+elements.titleFontSizeInput.addEventListener("change", (event) => {
+  setTitleFontSize(event.target.value);
+  event.target.value = state.titleFontSize;   // show the clamped value back
+});
+
+elements.titleFontSizeInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") { event.preventDefault(); event.target.blur(); }
+});
 
 $("[data-action='decrease-font']").addEventListener("click", () => setFontSize(state.fontSize - 2));
 $("[data-action='increase-font']").addEventListener("click", () => setFontSize(state.fontSize + 2));
