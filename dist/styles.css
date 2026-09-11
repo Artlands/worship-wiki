@@ -294,6 +294,12 @@ button { color: inherit; }
   padding: 32px 24px 24px;
   background: var(--night-2);
   border-right: 1px solid var(--line);
+  /* pin to the viewport so the list scrolls on its own, not with the page */
+  position: sticky;
+  top: 74px;
+  height: calc(100vh - 74px);
+  display: flex;
+  flex-direction: column;
 }
 
 .panel-heading,
@@ -386,7 +392,23 @@ kbd {
 
 .text-button { min-height: 26px; padding: 4px 2px; border: 0; background: none; color: var(--gold); cursor: pointer; }
 
-.song-list { display: grid; gap: 8px; }
+.song-list {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  overflow-y: auto;
+  min-height: 0;          /* let the flex child shrink so it can scroll */
+  padding-right: 6px;     /* keep the bar off the cards */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.song-list::-webkit-scrollbar { width: 8px; }
+.song-list::-webkit-scrollbar-track { background: transparent; }
+.song-list::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+.song-list::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 .empty-library { padding: 28px 10px; color: var(--muted); font-size: 13px; text-align: center; }
 
 .song-item {
@@ -892,8 +914,17 @@ dialog::backdrop {
   .button { padding: 0 12px; }
   .workspace { display: block; }
   .library-panel, .editor-panel, .preview-panel { padding: 24px 18px; border-right: 0; }
-  .library-panel { border-bottom: 1px solid var(--line); }
-  .song-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .library-panel {
+    border-bottom: 1px solid var(--line);
+    position: static;
+    height: auto;
+    display: block;
+  }
+  .song-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow-y: visible;
+    padding-right: 0;
+  }
   .title-fields { grid-template-columns: 1fr; }
   .lyrics-field textarea { min-height: 360px; }
   .slide-content { font-size: clamp(13px, 4.6vw, 26px); }
