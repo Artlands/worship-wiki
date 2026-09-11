@@ -57,11 +57,10 @@ Without Google configuration the site stays in its original local-draft mode. On
 
 Create a Google Sheet with two worksheets:
 
-- `Songs`: import [`google-sheet-template/Songs.csv`](google-sheet-template/Songs.csv)
+- `Songs`: import [`google-sheet-template/Songs-seed.csv`](google-sheet-template/Songs-seed.csv)
 - `_config`: import [`google-sheet-template/_config.csv`](google-sheet-template/_config.csv)
 
-To start with a library rather than an empty one, paste the rows from
-[`google-sheet-template/Songs-seed.csv`](google-sheet-template/Songs-seed.csv) beneath the `Songs` header. It holds ten classic hymns in Mandarin, all from public-domain originals.
+`Songs-seed.csv` carries the required header row followed by ten classic hymns in Mandarin, all from public-domain originals. Delete those rows after importing to start from an empty library instead.
 
 The column order in `Songs` must stay:
 

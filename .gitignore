@@ -1,1 +1,9 @@
 dist/config.js
+
+# the sheet template: only the config and the seed example are synced
+google-sheet-template/*.csv
+!google-sheet-template/_config.csv
+!google-sheet-template/Songs-seed.csv
+
+# local import/scraping helpers
+tools/
