@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#10274e"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Worship Wiki">
+  <rect width="64" height="64" rx="13" fill="#071013"/>
   <g fill="none" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M32 29 41 45.5 51.5 19.5" stroke="#d9b56d"/>
-    <path d="M12.5 19.5 23 45.5 32 29" stroke="#f7f5ef"/>
+    <path d="M32 29 41 45.5 51.5 19.5" stroke="#c8a75d"/>
+    <path d="M12.5 19.5 23 45.5 32 29" stroke="#f1eadb"/>
   </g>
 </svg>
