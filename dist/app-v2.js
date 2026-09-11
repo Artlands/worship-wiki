@@ -1,0 +1,1033 @@
+const starterSongs = [
+  {
+    id: "heavens-praise",
+    title: "诸天颂赞",
+    author: "示例诗歌",
+    tags: "赞美 · 创造",
+    updatedAt: 5,
+    lyrics: "诸天述说祢手中的荣美\n晨光宣告祢信实不改变\n万有同声，颂赞祢的圣名\n我的心也要永远歌唱\n\n荣耀归祢，慈爱的君王\n盼望归祢，黑夜的真光\n一生一世，我要寻求祢\n从今直到永远"
+  },
+  {
+    id: "grace-like-river",
+    title: "恩典如河",
+    author: "示例诗歌",
+    tags: "恩典 · 救赎",
+    updatedAt: 4,
+    lyrics: "恩典如河流进干渴心田\n祢的怜悯每天都是新鲜\n软弱时候，祢扶持我向前\n在祢怀中我得平安\n\n我要记念祢奇妙作为\n一生传扬祢信实恩惠\n无论高山，无论幽谷\n祢的慈爱永不止息"
+  },
+  {
+    id: "morning-psalm",
+    title: "清晨的诗篇",
+    author: "示例诗歌",
+    tags: "赞美 · 感恩",
+    updatedAt: 3,
+    lyrics: "清晨我要仰望祢\n等候祢温柔声音\n愿祢话语照亮今天\n领我走生命道路"
+  },
+  {
+    id: "eternal-rock",
+    title: "永恒磐石",
+    author: "示例诗歌",
+    tags: "信仰 · 基督",
+    updatedAt: 2,
+    lyrics: "祢是我永恒磐石\n风浪中坚固保障\n我的盼望安放于祢\n祢的应许永不动摇"
+  },
+  {
+    id: "quiet-heart",
+    title: "我心安静",
+    author: "示例诗歌",
+    tags: "敬拜 · 奉献",
+    updatedAt: 1,
+    lyrics: "我心安静在祢面前\n放下忧虑单单仰望\n愿祢旨意成就在我\n愿我一生为祢发光"
+  }
+];
+
+const STORAGE_KEY = "worship-wiki-v2";
+
+const translations = {
+  "zh-CN": {
+    pageTitle: "敬拜百科 · Worship Wiki",
+    metaDescription: "为教会敬拜团队整理歌词、自动分页并生成投影幻灯片。",
+    brandHome: "敬拜百科首页", brandName: "敬拜百科", mainNav: "主要导航",
+    studio: "制作台", library: "曲库", guide: "使用说明", languageLabel: "界面语言",
+    saved: "已在此设备保存", saving: "正在保存…", exportSlides: "导出幻灯片",
+    worshipLibrary: "敬拜歌曲库", myLibrary: "我的曲库", worshipSongs: "敬拜诗歌",
+    newSong: "新建诗歌", searchSong: "搜索诗歌", searchPlaceholder: "搜索歌名或主题…",
+    songCount: "{count} 首诗歌", sortRecent: "按最近编辑", tip: "小提示",
+    blankTip: "空行会成为幻灯片的自然分页点。", lyricsEditor: "歌词编辑器",
+    moreOptions: "更多选项", songName: "诗歌名称", authorSource: "作者 / 来源",
+    lyricsPagination: "歌词与分页", lyricsToolbar: "歌词格式工具栏",
+    autoPaginate: "自动分页", blankPaginate: "按空行分页", decreaseFont: "缩小字号",
+    increaseFont: "放大字号", lyrics: "歌词", editedJustNow: "最近编辑：刚刚",
+    slidePreview: "幻灯片预览", livePreview: "实时预览", stageScreen: "舞台画面",
+    previousSlide: "上一张", nextSlide: "下一张", visualStyle: "画面样式",
+    chooseVisualStyle: "选择画面样式", themeMidnight: "深夜穹顶",
+    themeParchment: "古典纸页", themeDawn: "晨光旷野", safeArea: "投影安全区",
+    safeAreaText: "文字已保持在屏幕边缘以内。", readyToShare: "准备分享", close: "关闭",
+    exportIntroBefore: "将以当前主题和分页生成 ", exportIntroAfter: " 16:9 幻灯片。",
+    pptDescription: "通用演示文件 · .pptx", keynoteDescription: "导入兼容文件 · .pptx",
+    pdfDescription: "画面固定 · 适合分享", generate: "生成", generating: "生成中…",
+    privacy: "文件只在你的浏览器中生成，歌词不会上传。", threeSteps: "三步完成",
+    guideTitle: "从歌词到舞台", addLyrics: "添加歌词",
+    addLyricsDesc: "新建诗歌，或从曲库选择并修改。", checkPagination: "检查分页",
+    checkPaginationDesc: "每四行自动分页；也可用空行指定页面。", chooseExport: "选择并导出",
+    chooseExportDesc: "挑选画面主题，再生成 PPTX、Keynote 兼容文件或 PDF。",
+    startCreating: "开始制作", emptyLibrary: "没有找到相关诗歌", untitledSong: "未命名诗歌",
+    uncategorized: "未分类", pageShort: "{count}页", slidesCount: "{count} 张",
+    lyricsStats: "{lines} 行 · {slides} 张幻灯片", emptyLyrics: "在左侧输入歌词",
+    defaultFileName: "敬拜幻灯片", pptLoadError: "PowerPoint 组件尚未加载，请检查网络后重试。",
+    pdfLoadError: "PDF 组件尚未加载，请检查网络后重试。", exportSubject: "敬拜歌词幻灯片",
+    keynoteReady: "已生成 Keynote 可导入的 PPTX 文件", slidesReady: "幻灯片已生成",
+    exportFailed: "导出失败，请稍后重试", firstLyricLine: "在这里输入第一行歌词",
+    newTag: "新建", localSaveInfo: "这首诗歌会自动保存在当前设备",
+    sortedRecent: "已按最近编辑排序", languageChanged: "界面语言已更新",
+    accessControl: "访问权限", editAccessTitle: "编辑者登录", accountLocal: "本地模式",
+    accountGuest: "访客 · 只读", accountChecking: "检查权限…", accountViewer: "等待邀请",
+    accountEditor: "编辑者", localStatusTitle: "本地草稿模式",
+    localStatusText: "连接 Google Sheet 后，只有受邀账号可以编辑。",
+    guestStatusTitle: "访客只读", guestStatusText: "登录 Google 账号以检查是否拥有编辑权限。",
+    checkingStatusTitle: "正在检查权限", checkingStatusText: "正在确认此账号是否是受邀编辑者。",
+    viewerStatusTitle: "尚未获得编辑权限", viewerStatusText: "你可以继续查看和导出，或发邮件申请加入编辑。",
+    editorStatusTitle: "已获得编辑权限", editorStatusText: "你可以新增、修改并将歌词同步到 Google Sheet。",
+    signInGoogle: "使用 Google 登录", requestAccess: "申请编辑权限", leaveEditMode: "退出编辑模式",
+    adminLabel: "管理员：", accessSecurityNote: "编辑权限由 Google Drive 共享设置强制执行。",
+    cloudReadOnly: "云端曲库 · 只读", cloudEditorReady: "云端曲库 · 已同步", cloudChecking: "正在连接云端…", cloudSaving: "正在同步到云端…",
+    googleLoading: "正在加载 Google 登录…", googleLoginFailed: "Google 登录失败，请稍后重试",
+    cloudLoadFailed: "暂时无法读取云端曲库，已保留本地内容", cloudSaveFailed: "云端保存失败，请检查网络或权限",
+    cloudSaved: "已同步到 Google Sheet", editorRequired: "只有受邀编辑者可以修改歌词",
+    requestUnavailable: "管理员邮箱尚未配置", accessRequestSubject: "申请加入敬拜百科编辑团队",
+    accessRequestBody: "你好，我希望使用以下 Google 账号加入敬拜百科编辑团队：\n\n{email}\n\n请在 Google Sheet 中邀请此账号为编辑者。谢谢！"
+  },
+  "zh-TW": {
+    pageTitle: "敬拜百科 · Worship Wiki",
+    metaDescription: "為教會敬拜團隊整理歌詞、自動分頁並產生投影投影片。",
+    brandHome: "敬拜百科首頁", brandName: "敬拜百科", mainNav: "主要導覽",
+    studio: "製作台", library: "曲庫", guide: "使用說明", languageLabel: "介面語言",
+    saved: "已儲存於此裝置", saving: "正在儲存…", exportSlides: "匯出投影片",
+    worshipLibrary: "敬拜歌曲庫", myLibrary: "我的曲庫", worshipSongs: "敬拜詩歌",
+    newSong: "新增詩歌", searchSong: "搜尋詩歌", searchPlaceholder: "搜尋歌名或主題…",
+    songCount: "{count} 首詩歌", sortRecent: "按最近編輯", tip: "小提示",
+    blankTip: "空白行會成為投影片的自然分頁點。", lyricsEditor: "歌詞編輯器",
+    moreOptions: "更多選項", songName: "詩歌名稱", authorSource: "作者 / 來源",
+    lyricsPagination: "歌詞與分頁", lyricsToolbar: "歌詞格式工具列",
+    autoPaginate: "自動分頁", blankPaginate: "按空白行分頁", decreaseFont: "縮小字級",
+    increaseFont: "放大字級", lyrics: "歌詞", editedJustNow: "最近編輯：剛剛",
+    slidePreview: "投影片預覽", livePreview: "即時預覽", stageScreen: "舞台畫面",
+    previousSlide: "上一張", nextSlide: "下一張", visualStyle: "畫面樣式",
+    chooseVisualStyle: "選擇畫面樣式", themeMidnight: "深夜穹頂",
+    themeParchment: "古典紙頁", themeDawn: "晨光曠野", safeArea: "投影安全區",
+    safeAreaText: "文字已保持在螢幕邊緣以內。", readyToShare: "準備分享", close: "關閉",
+    exportIntroBefore: "將以目前主題和分頁產生 ", exportIntroAfter: " 16:9 投影片。",
+    pptDescription: "通用簡報檔案 · .pptx", keynoteDescription: "匯入相容檔案 · .pptx",
+    pdfDescription: "畫面固定 · 適合分享", generate: "產生", generating: "產生中…",
+    privacy: "檔案只在你的瀏覽器中產生，歌詞不會上傳。", threeSteps: "三步完成",
+    guideTitle: "從歌詞到舞台", addLyrics: "新增歌詞",
+    addLyricsDesc: "新增詩歌，或從曲庫選擇並修改。", checkPagination: "檢查分頁",
+    checkPaginationDesc: "每四行自動分頁；也可用空白行指定頁面。", chooseExport: "選擇並匯出",
+    chooseExportDesc: "挑選畫面主題，再產生 PPTX、Keynote 相容檔案或 PDF。",
+    startCreating: "開始製作", emptyLibrary: "找不到相關詩歌", untitledSong: "未命名詩歌",
+    uncategorized: "未分類", pageShort: "{count}頁", slidesCount: "{count} 張",
+    lyricsStats: "{lines} 行 · {slides} 張投影片", emptyLyrics: "在左側輸入歌詞",
+    defaultFileName: "敬拜投影片", pptLoadError: "PowerPoint 元件尚未載入，請檢查網路後重試。",
+    pdfLoadError: "PDF 元件尚未載入，請檢查網路後重試。", exportSubject: "敬拜歌詞投影片",
+    keynoteReady: "已產生 Keynote 可匯入的 PPTX 檔案", slidesReady: "投影片已產生",
+    exportFailed: "匯出失敗，請稍後重試", firstLyricLine: "在這裡輸入第一行歌詞",
+    newTag: "新增", localSaveInfo: "這首詩歌會自動儲存於目前裝置",
+    sortedRecent: "已按最近編輯排序", languageChanged: "介面語言已更新",
+    accessControl: "存取權限", editAccessTitle: "編輯者登入", accountLocal: "本機模式",
+    accountGuest: "訪客 · 唯讀", accountChecking: "檢查權限…", accountViewer: "等待邀請",
+    accountEditor: "編輯者", localStatusTitle: "本機草稿模式",
+    localStatusText: "連接 Google Sheet 後，只有受邀帳號可以編輯。",
+    guestStatusTitle: "訪客唯讀", guestStatusText: "登入 Google 帳號以檢查是否擁有編輯權限。",
+    checkingStatusTitle: "正在檢查權限", checkingStatusText: "正在確認此帳號是否為受邀編輯者。",
+    viewerStatusTitle: "尚未獲得編輯權限", viewerStatusText: "你可以繼續檢視和匯出，或寄送郵件申請加入編輯。",
+    editorStatusTitle: "已獲得編輯權限", editorStatusText: "你可以新增、修改並將歌詞同步到 Google Sheet。",
+    signInGoogle: "使用 Google 登入", requestAccess: "申請編輯權限", leaveEditMode: "退出編輯模式",
+    adminLabel: "管理員：", accessSecurityNote: "編輯權限由 Google Drive 共用設定強制執行。",
+    cloudReadOnly: "雲端曲庫 · 唯讀", cloudEditorReady: "雲端曲庫 · 已同步", cloudChecking: "正在連接雲端…", cloudSaving: "正在同步到雲端…",
+    googleLoading: "正在載入 Google 登入…", googleLoginFailed: "Google 登入失敗，請稍後重試",
+    cloudLoadFailed: "暫時無法讀取雲端曲庫，已保留本機內容", cloudSaveFailed: "雲端儲存失敗，請檢查網路或權限",
+    cloudSaved: "已同步到 Google Sheet", editorRequired: "只有受邀編輯者可以修改歌詞",
+    requestUnavailable: "管理員電子郵件尚未設定", accessRequestSubject: "申請加入敬拜百科編輯團隊",
+    accessRequestBody: "你好，我希望使用以下 Google 帳號加入敬拜百科編輯團隊：\n\n{email}\n\n請在 Google Sheet 中邀請此帳號為編輯者。謝謝！"
+  },
+  en: {
+    pageTitle: "Worship Wiki · Slide Maker",
+    metaDescription: "Organize worship lyrics, create slide breaks, and export projection-ready presentations.",
+    brandHome: "Worship Wiki home", brandName: "Worship Wiki", mainNav: "Main navigation",
+    studio: "Studio", library: "Library", guide: "Guide", languageLabel: "Interface language",
+    saved: "Saved on this device", saving: "Saving…", exportSlides: "Export slides",
+    worshipLibrary: "Worship song library", myLibrary: "My library", worshipSongs: "Worship songs",
+    newSong: "Add song", searchSong: "Search songs", searchPlaceholder: "Search title or theme…",
+    songCount: "{count} songs", sortRecent: "Recently edited", tip: "Tip",
+    blankTip: "Blank lines create natural slide breaks.", lyricsEditor: "Lyrics editor",
+    moreOptions: "More options", songName: "Song title", authorSource: "Author / source",
+    lyricsPagination: "Lyrics & pagination", lyricsToolbar: "Lyrics formatting toolbar",
+    autoPaginate: "Auto paginate", blankPaginate: "Split on blank lines", decreaseFont: "Decrease font size",
+    increaseFont: "Increase font size", lyrics: "Lyrics", editedJustNow: "Edited just now",
+    slidePreview: "Slide preview", livePreview: "Live preview", stageScreen: "Stage screen",
+    previousSlide: "Previous slide", nextSlide: "Next slide", visualStyle: "Visual style",
+    chooseVisualStyle: "Choose visual style", themeMidnight: "Midnight Dome",
+    themeParchment: "Classic Parchment", themeDawn: "Desert Dawn", safeArea: "Projection safe area",
+    safeAreaText: "Text stays inside the safe edges of the screen.", readyToShare: "Ready to share", close: "Close",
+    exportIntroBefore: "Create ", exportIntroAfter: " 16:9 slides using the current theme and pagination.",
+    pptDescription: "Universal presentation · .pptx", keynoteDescription: "Keynote-compatible import · .pptx",
+    pdfDescription: "Fixed layout · Easy to share", generate: "Generate", generating: "Generating…",
+    privacy: "Files are generated in your browser. Lyrics are never uploaded.", threeSteps: "Three simple steps",
+    guideTitle: "From lyrics to stage", addLyrics: "Add lyrics",
+    addLyricsDesc: "Create a song, or choose one from the library to edit.", checkPagination: "Check pagination",
+    checkPaginationDesc: "Split every four lines automatically, or use blank lines.", chooseExport: "Choose and export",
+    chooseExportDesc: "Pick a visual theme, then create a PPTX, Keynote-compatible file, or PDF.",
+    startCreating: "Start creating", emptyLibrary: "No matching songs", untitledSong: "Untitled song",
+    uncategorized: "Uncategorized", pageShort: "{count}p", slidesCount: "{count} slides",
+    lyricsStats: "{lines} lines · {slides} slides", emptyLyrics: "Enter lyrics on the left",
+    defaultFileName: "Worship Slides", pptLoadError: "The PowerPoint exporter has not loaded. Check your connection and try again.",
+    pdfLoadError: "The PDF exporter has not loaded. Check your connection and try again.", exportSubject: "Worship lyric slides",
+    keynoteReady: "Created a PPTX file ready to import into Keynote", slidesReady: "Your slides are ready",
+    exportFailed: "Export failed. Please try again.", firstLyricLine: "Enter the first line of lyrics here",
+    newTag: "New", localSaveInfo: "This song is saved automatically on this device",
+    sortedRecent: "Sorted by recent edits", languageChanged: "Interface language updated",
+    accessControl: "Access control", editAccessTitle: "Editor access", accountLocal: "Local mode",
+    accountGuest: "Guest · Read only", accountChecking: "Checking access…", accountViewer: "Awaiting invite",
+    accountEditor: "Editor", localStatusTitle: "Local draft mode",
+    localStatusText: "Once Google Sheets is connected, only invited accounts can edit.",
+    guestStatusTitle: "Guest access", guestStatusText: "Sign in with Google to check whether you have editing access.",
+    checkingStatusTitle: "Checking access", checkingStatusText: "Confirming whether this account is an invited editor.",
+    viewerStatusTitle: "Editing access not granted", viewerStatusText: "You can keep viewing and exporting, or email the administrator to request access.",
+    editorStatusTitle: "Editing access granted", editorStatusText: "You can add and update lyrics and sync them to Google Sheets.",
+    signInGoogle: "Sign in with Google", requestAccess: "Request editing access", leaveEditMode: "Leave editing mode",
+    adminLabel: "Administrator:", accessSecurityNote: "Editing access is enforced by Google Drive sharing permissions.",
+    cloudReadOnly: "Cloud library · Read only", cloudEditorReady: "Cloud library · Synced", cloudChecking: "Connecting to cloud…", cloudSaving: "Syncing to cloud…",
+    googleLoading: "Loading Google sign-in…", googleLoginFailed: "Google sign-in failed. Please try again.",
+    cloudLoadFailed: "The cloud library is unavailable. Local content is still available.", cloudSaveFailed: "Cloud save failed. Check your connection or access.",
+    cloudSaved: "Synced to Google Sheets", editorRequired: "Only invited editors can change lyrics",
+    requestUnavailable: "The administrator email has not been configured", accessRequestSubject: "Request to join the Worship Wiki editing team",
+    accessRequestBody: "Hello, I would like to join the Worship Wiki editing team using this Google account:\n\n{email}\n\nPlease invite this account as an editor in Google Sheets. Thank you!"
+  }
+};
+
+function t(key, variables = {}) {
+  const value = translations[state?.locale]?.[key] || translations["zh-CN"][key] || key;
+  return Object.entries(variables).reduce(
+    (result, [name, replacement]) => result.replaceAll(`{${name}}`, String(replacement)),
+    value
+  );
+}
+
+function loadStoredState() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!stored || !Array.isArray(stored.songs) || !stored.songs.length) return null;
+    return stored;
+  } catch (_error) {
+    return null;
+  }
+}
+
+const storedState = loadStoredState();
+const storedSongs = storedState?.songs || starterSongs;
+const storedActiveId = storedState?.activeId;
+
+const state = {
+  songs: storedSongs,
+  activeId: storedSongs.some((song) => song.id === storedActiveId) ? storedActiveId : storedSongs[0].id,
+  slideIndex: 0,
+  pagination: storedState?.pagination === "blank" ? "blank" : "auto",
+  fontSize: Number.isFinite(storedState?.fontSize) ? storedState.fontSize : 44,
+  theme: ["midnight", "parchment", "dawn"].includes(storedState?.theme) ? storedState.theme : "midnight",
+  locale: ["zh-CN", "zh-TW", "en"].includes(storedState?.locale) ? storedState.locale : "zh-CN"
+};
+
+const publicConfig = window.WORSHIP_WIKI_CONFIG || {};
+const requiredConfigKeys = ["googleClientId", "googleApiKey", "spreadsheetId", "adminEmail"];
+const backend = {
+  configured: requiredConfigKeys.every((key) => {
+    const value = String(publicConfig[key] || "").trim();
+    return value && !value.startsWith("YOUR_");
+  }),
+  role: "local",
+  accessToken: "",
+  userEmail: "",
+  tokenClient: null,
+  dirtySongIds: new Set(),
+  remoteSaveTimers: new Map(),
+  syncTimer: null
+};
+
+const $ = (selector) => document.querySelector(selector);
+const $$ = (selector) => [...document.querySelectorAll(selector)];
+
+const elements = {
+  songList: $("#songList"), search: $("#songSearch"), count: $("#songCount"),
+  title: $("#songTitle"), author: $("#songAuthor"), lyrics: $("#lyricsInput"),
+  breadcrumb: $("#breadcrumbTitle"), slideContent: $("#slideContent"),
+  slideTitle: $("#slideSongTitle"), currentSlide: $("#currentSlide"),
+  totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
+  fontSizeLabel: $("#fontSizeLabel"), saveState: $("#saveState"), toast: $("#toast"),
+  exportDialog: $("#exportDialog"), exportSlideCount: $("#exportSlideCount"), guideDialog: $("#guideDialog"),
+  languageSelect: $("#languageSelect"), accountButton: $("#accountButton"), accountLabel: $("#accountLabel"),
+  accessDialog: $("#accessDialog"), accessStatus: $("#accessStatus"), accessStatusTitle: $("#accessStatusTitle"),
+  accessStatusText: $("#accessStatusText"), googleSignInButton: $("#googleSignInButton"),
+  requestAccessButton: $("#requestAccessButton"), leaveEditModeButton: $("#leaveEditModeButton"),
+  adminContact: $("#adminContact"), adminEmailLink: $("#adminEmailLink"),
+  editorPanel: $(".editor-panel"), newSongButton: $("#newSongButton")
+};
+
+function translateInterface() {
+  document.documentElement.lang = state.locale;
+  document.title = t("pageTitle");
+  $("meta[name='description']").content = t("metaDescription");
+  $$('[data-i18n]').forEach((element) => { element.textContent = t(element.dataset.i18n); });
+  $$('[data-i18n-aria]').forEach((element) => { element.setAttribute("aria-label", t(element.dataset.i18nAria)); });
+  $$('[data-i18n-placeholder]').forEach((element) => { element.placeholder = t(element.dataset.i18nPlaceholder); });
+  elements.languageSelect.value = state.locale;
+  renderAccessState();
+}
+
+function refreshSaveState() {
+  let key = "saved";
+  if (backend.role === "checking") key = "cloudChecking";
+  else if (backend.role === "editor") key = backend.dirtySongIds.size ? "cloudSaving" : "cloudEditorReady";
+  else if (backend.configured) key = "cloudReadOnly";
+  elements.saveState.innerHTML = `<i></i> ${t(key)}`;
+}
+
+function renderAccessState() {
+  const role = backend.configured ? backend.role : "local";
+  const accountKeys = {
+    local: "accountLocal", guest: "accountGuest", checking: "accountChecking",
+    viewer: "accountViewer", editor: "accountEditor"
+  };
+  const titleKeys = {
+    local: "localStatusTitle", guest: "guestStatusTitle", checking: "checkingStatusTitle",
+    viewer: "viewerStatusTitle", editor: "editorStatusTitle"
+  };
+  const textKeys = {
+    local: "localStatusText", guest: "guestStatusText", checking: "checkingStatusText",
+    viewer: "viewerStatusText", editor: "editorStatusText"
+  };
+  elements.accountButton.dataset.role = role;
+  elements.accountLabel.textContent = t(accountKeys[role]);
+  elements.accessStatus.dataset.role = role;
+  elements.accessStatusTitle.textContent = t(titleKeys[role]);
+  elements.accessStatusText.textContent = `${t(textKeys[role])}${backend.userEmail ? ` ${backend.userEmail}` : ""}`;
+  elements.googleSignInButton.hidden = !backend.configured || role === "checking" || role === "editor";
+  elements.requestAccessButton.hidden = !backend.configured || role !== "viewer";
+  elements.leaveEditModeButton.hidden = role !== "editor";
+  elements.adminContact.hidden = !backend.configured;
+  if (backend.configured) {
+    elements.adminEmailLink.textContent = publicConfig.adminEmail;
+    elements.adminEmailLink.href = `mailto:${publicConfig.adminEmail}`;
+  }
+  const canEdit = role === "local" || role === "editor";
+  elements.title.readOnly = !canEdit;
+  elements.author.readOnly = !canEdit;
+  elements.lyrics.readOnly = !canEdit;
+  elements.newSongButton.disabled = !canEdit;
+  elements.editorPanel.classList.toggle("is-readonly", !canEdit);
+  refreshSaveState();
+}
+
+function activeSong() {
+  return state.songs.find((song) => song.id === state.activeId);
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function paginate(lyrics) {
+  const clean = String(lyrics || "").trim();
+  if (!clean) return [[t("emptyLyrics")]];
+  const blocks = clean.split(/\n\s*\n/).map((block) => block.split("\n").filter((line) => line.trim()));
+  if (state.pagination === "blank") return blocks;
+  const pages = [];
+  blocks.forEach((block) => {
+    for (let index = 0; index < block.length; index += 4) pages.push(block.slice(index, index + 4));
+  });
+  return pages;
+}
+
+function saveNow() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      songs: state.songs, activeId: state.activeId, pagination: state.pagination,
+      fontSize: state.fontSize, theme: state.theme, locale: state.locale
+    }));
+  } catch (error) {
+    console.warn("Local save unavailable", error);
+  }
+  refreshSaveState();
+}
+
+function scheduleSave() {
+  if (!backend.configured) elements.saveState.innerHTML = `<i></i> ${t("saving")}`;
+  window.clearTimeout(scheduleSave.timeout);
+  scheduleSave.timeout = window.setTimeout(saveNow, 450);
+}
+
+function renderLibrary(filter = "") {
+  const query = filter.trim().toLocaleLowerCase(state.locale);
+  const filtered = state.songs.filter((song) =>
+    [song.title, song.author, song.tags].join(" ").toLocaleLowerCase(state.locale).includes(query)
+  );
+  elements.count.textContent = t("songCount", { count: filtered.length });
+  elements.songList.innerHTML = filtered.length ? filtered.map((song, index) => {
+    const pages = paginate(song.lyrics).length;
+    return `
+      <button class="song-item ${song.id === state.activeId ? "active" : ""}" type="button" data-song-id="${escapeHtml(song.id)}">
+        <span class="song-number">${String(index + 1).padStart(2, "0")}</span>
+        <span class="song-copy"><strong>${escapeHtml(song.title || t("untitledSong"))}</strong><span>${escapeHtml(song.tags || song.author || t("uncategorized"))}</span></span>
+        <span class="song-pages">${t("pageShort", { count: pages })}</span>
+      </button>`;
+  }).join("") : `<p class="empty-library">${t("emptyLibrary")}</p>`;
+}
+
+function renderEditor() {
+  const song = activeSong();
+  if (["midnight", "parchment", "dawn"].includes(song.theme)) state.theme = song.theme;
+  elements.title.value = song.title;
+  elements.author.value = song.author;
+  elements.lyrics.value = song.lyrics;
+  elements.breadcrumb.textContent = song.title || t("untitledSong");
+  state.slideIndex = 0;
+  renderControls();
+  renderPreview();
+}
+
+function renderControls() {
+  $$('[data-mode]').forEach((item) => item.classList.toggle("active", item.dataset.mode === state.pagination));
+  $$('[data-theme]').forEach((item) => item.classList.toggle("active", item.dataset.theme === state.theme));
+  elements.slideFrame.className = `slide-frame theme-${state.theme}`;
+}
+
+function renderPreview() {
+  const song = activeSong();
+  const slides = paginate(song.lyrics);
+  state.slideIndex = Math.min(state.slideIndex, slides.length - 1);
+  const lines = slides[state.slideIndex] || [];
+  elements.slideContent.innerHTML = lines.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
+  elements.slideContent.style.fontSize = `${Math.max(14, state.fontSize / 1.65)}px`;
+  elements.slideTitle.textContent = song.title || t("untitledSong");
+  elements.currentSlide.textContent = state.slideIndex + 1;
+  elements.totalSlides.textContent = slides.length;
+  elements.fontSizeLabel.textContent = state.fontSize;
+  elements.exportSlideCount.textContent = t("slidesCount", { count: slides.length });
+  const lineCount = String(song.lyrics || "").split("\n").filter((line) => line.trim()).length;
+  elements.stats.textContent = t("lyricsStats", { lines: lineCount, slides: slides.length });
+  renderLibrary(elements.search.value);
+}
+
+function updateSong(field, value, shouldRender = true) {
+  if (backend.configured && backend.role !== "editor") {
+    showToast(t("editorRequired"));
+    renderEditor();
+    return;
+  }
+  const song = activeSong();
+  song[field] = value;
+  song.updatedAt = Date.now();
+  if (field === "title") elements.breadcrumb.textContent = value || t("untitledSong");
+  if (shouldRender) renderPreview();
+  scheduleSave();
+  if (["title", "author", "lyrics"].includes(field)) scheduleRemoteSave(song.id);
+}
+
+function showToast(message) {
+  elements.toast.textContent = message;
+  elements.toast.classList.add("show");
+  window.clearTimeout(showToast.timeout);
+  showToast.timeout = window.setTimeout(() => elements.toast.classList.remove("show"), 2600);
+}
+
+function sanitizeFileName(value) {
+  return String(value || t("defaultFileName")).replace(/[\\/:*?"<>|]/g, "-").trim() || t("defaultFileName");
+}
+
+function renderSlideCanvas(lines, song) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1600;
+  canvas.height = 900;
+  const context = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  let textColor = "#ffffff";
+  const canvasSerif = state.locale === "zh-TW" ? '"Noto Serif TC", "Songti TC", serif' : state.locale === "en" ? 'Georgia, "Times New Roman", serif' : '"Noto Serif SC", "Songti SC", serif';
+  const canvasSans = state.locale === "zh-TW" ? '"Noto Sans TC", "PingFang TC", sans-serif' : state.locale === "en" ? 'Inter, Arial, sans-serif' : '"Noto Sans SC", "PingFang SC", sans-serif';
+
+  if (state.theme === "midnight") {
+    const gradient = context.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#07152f");
+    gradient.addColorStop(0.58, "#112e5a");
+    gradient.addColorStop(1, "#173e69");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+    const glow = context.createRadialGradient(1280, 155, 0, 1280, 155, 430);
+    glow.addColorStop(0, "rgba(217,181,109,.28)");
+    glow.addColorStop(1, "rgba(217,181,109,0)");
+    context.fillStyle = glow;
+    context.fillRect(0, 0, width, height);
+  } else if (state.theme === "parchment") {
+    const gradient = context.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#f2ead8");
+    gradient.addColorStop(1, "#d8c498");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+    textColor = "#26304a";
+    context.strokeStyle = "rgba(71,55,31,.055)";
+    for (let y = 0; y < height; y += 18) {
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(width, y + 10);
+      context.stroke();
+    }
+  } else {
+    const gradient = context.createLinearGradient(0, 0, width, height);
+    gradient.addColorStop(0, "#4c6884");
+    gradient.addColorStop(0.58, "#b8876d");
+    gradient.addColorStop(1, "#d9b879");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, width, height);
+    const haze = context.createRadialGradient(1240, 160, 0, 1240, 160, 520);
+    haze.addColorStop(0, "rgba(255,236,185,.34)");
+    haze.addColorStop(1, "rgba(255,236,185,0)");
+    context.fillStyle = haze;
+    context.fillRect(0, 0, width, height);
+  }
+
+  context.save();
+  context.strokeStyle = state.theme === "parchment" ? "rgba(91,65,26,.22)" : "rgba(217,181,109,.34)";
+  context.lineWidth = 2;
+  [390, 430, 480].forEach((radius) => {
+    context.beginPath();
+    context.arc(1460, -165, radius, 0, Math.PI * 2);
+    context.stroke();
+  });
+  context.restore();
+
+  let fontPx = Math.min(state.fontSize * 1.78, 98);
+  const maxTextWidth = width * 0.82;
+  do {
+    context.font = `700 ${fontPx}px ${canvasSerif}`;
+    if (Math.max(...lines.map((line) => context.measureText(line).width), 0) <= maxTextWidth) break;
+    fontPx -= 2;
+  } while (fontPx > 46);
+
+  const lineHeight = fontPx * 1.62;
+  const groupHeight = Math.max(0, (lines.length - 1) * lineHeight);
+  const startY = height / 2 - groupHeight / 2;
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillStyle = textColor;
+  if (state.theme !== "parchment") {
+    context.shadowColor = "rgba(0,0,0,.28)";
+    context.shadowBlur = 16;
+    context.shadowOffsetY = 4;
+  }
+  lines.forEach((line, index) => context.fillText(line, width / 2, startY + index * lineHeight));
+  context.shadowColor = "transparent";
+  context.font = `500 22px ${canvasSans}`;
+  context.textAlign = "left";
+  context.fillStyle = state.theme === "parchment" ? "rgba(38,48,74,.58)" : "rgba(255,255,255,.55)";
+  context.fillText(song.title || t("untitledSong"), 80, 838);
+  return canvas;
+}
+
+async function exportPptx(fileName, keynoteCompatible = false) {
+  if (!window.PptxGenJS) throw new Error(t("pptLoadError"));
+  const song = activeSong();
+  const pages = paginate(song.lyrics);
+  const deck = new window.PptxGenJS();
+  deck.layout = "LAYOUT_WIDE";
+  deck.author = "敬拜百科 Worship Wiki";
+  deck.company = "Worship Wiki";
+  deck.subject = t("exportSubject");
+  deck.title = song.title || t("defaultFileName");
+  deck.lang = state.locale;
+  pages.forEach((lines) => {
+    const slide = deck.addSlide();
+    slide.background = { color: state.theme === "parchment" ? "F2EAD8" : "10274E" };
+    slide.addImage({ data: renderSlideCanvas(lines, song).toDataURL("image/png"), x: 0, y: 0, w: 13.333, h: 7.5 });
+  });
+  await deck.writeFile({ fileName: `${fileName}${keynoteCompatible ? "-Keynote" : ""}.pptx`, compression: true });
+}
+
+async function exportPdf(fileName) {
+  if (!window.jspdf?.jsPDF) throw new Error(t("pdfLoadError"));
+  const { jsPDF } = window.jspdf;
+  const song = activeSong();
+  const pages = paginate(song.lyrics);
+  const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1600, 900], hotfixes: ["px_scaling"] });
+  pdf.setProperties({ title: song.title || t("defaultFileName"), author: "Worship Wiki", subject: t("exportSubject") });
+  pages.forEach((lines, index) => {
+    if (index > 0) pdf.addPage([1600, 900], "landscape");
+    pdf.addImage(renderSlideCanvas(lines, song).toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, 1600, 900, undefined, "FAST");
+  });
+  pdf.save(`${fileName}.pdf`);
+}
+
+async function handleExport(format, button) {
+  const fileName = sanitizeFileName(activeSong().title);
+  const options = $$('[data-export-format]');
+  options.forEach((option) => { option.disabled = true; });
+  const actionLabel = button.querySelector("i");
+  const previousLabel = actionLabel.textContent;
+  actionLabel.textContent = t("generating");
+  try {
+    if (document.fonts?.ready) await document.fonts.ready;
+    if (format === "pdf") await exportPdf(fileName);
+    else await exportPptx(fileName, format === "keynote");
+    elements.exportDialog.close();
+    showToast(format === "keynote" ? t("keynoteReady") : t("slidesReady"));
+  } catch (error) {
+    console.error(error);
+    showToast(error.message || t("exportFailed"));
+  } finally {
+    actionLabel.textContent = previousLabel;
+    options.forEach((option) => { option.disabled = false; });
+  }
+}
+
+function sheetsValuesUrl(range, query = {}, action = "") {
+  const params = new URLSearchParams(query);
+  const suffix = params.size ? `?${params.toString()}` : "";
+  return `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(publicConfig.spreadsheetId)}/values/${encodeURIComponent(range)}${action}${suffix}`;
+}
+
+async function googleApiRequest(url, options = {}) {
+  const response = await fetch(url, options);
+  if (!response.ok) {
+    const error = new Error(`Google API request failed (${response.status})`);
+    error.status = response.status;
+    try { error.details = await response.json(); } catch (_error) { error.details = null; }
+    throw error;
+  }
+  return response.status === 204 ? {} : response.json();
+}
+
+function authorizationHeaders(accessToken, withJson = false) {
+  const headers = {};
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  if (withJson) headers["Content-Type"] = "application/json";
+  return headers;
+}
+
+async function readSheetRange(range, accessToken = "") {
+  const query = accessToken ? {} : { key: publicConfig.googleApiKey };
+  return googleApiRequest(sheetsValuesUrl(range, query), {
+    headers: authorizationHeaders(accessToken)
+  });
+}
+
+async function writeSheetRange(range, values, accessToken) {
+  return googleApiRequest(sheetsValuesUrl(range, { valueInputOption: "RAW" }), {
+    method: "PUT",
+    headers: authorizationHeaders(accessToken, true),
+    body: JSON.stringify({ range, majorDimension: "ROWS", values })
+  });
+}
+
+async function appendSheetRow(values, accessToken) {
+  return googleApiRequest(sheetsValuesUrl(publicConfig.appendRange || "Songs!A:I", {
+    valueInputOption: "RAW",
+    insertDataOption: "INSERT_ROWS"
+  }, ":append"), {
+    method: "POST",
+    headers: authorizationHeaders(accessToken, true),
+    body: JSON.stringify({ majorDimension: "ROWS", values: [values] })
+  });
+}
+
+function rowsToSongs(rows = []) {
+  return rows.map((row, index) => {
+    if (!row?.[0] && !row?.[1]) return null;
+    return {
+      id: row[0] || `sheet-row-${index + 2}`,
+      title: row[1] || t("untitledSong"),
+      author: row[2] || "",
+      tags: row[3] || "",
+      lyrics: row[4] || "",
+      theme: ["midnight", "parchment", "dawn"].includes(row[5]) ? row[5] : "midnight",
+      updatedAt: Date.parse(row[6]) || 0,
+      updatedBy: row[7] || "",
+      version: Number(row[8]) || 0,
+      rowNumber: index + 2
+    };
+  }).filter(Boolean);
+}
+
+async function loadRemoteSongs({ accessToken = backend.accessToken, silent = false } = {}) {
+  if (!backend.configured || backend.dirtySongIds.size) return false;
+  try {
+    const payload = await readSheetRange(publicConfig.songsRange || "Songs!A2:I", accessToken);
+    const remoteSongs = rowsToSongs(payload.values);
+    if (!remoteSongs.length) return true;
+    const previousActiveId = state.activeId;
+    state.songs = remoteSongs;
+    state.activeId = remoteSongs.some((song) => song.id === previousActiveId) ? previousActiveId : remoteSongs[0].id;
+    renderLibrary(elements.search.value);
+    renderEditor();
+    saveNow();
+    return true;
+  } catch (error) {
+    console.warn("Cloud library load failed", error);
+    if (!silent) showToast(t("cloudLoadFailed"));
+    return false;
+  }
+}
+
+function songRowValues(song) {
+  return [
+    song.id,
+    song.title,
+    song.author,
+    song.tags,
+    song.lyrics,
+    song.theme || state.theme,
+    new Date().toISOString(),
+    backend.userEmail,
+    (Number(song.version) || 0) + 1
+  ];
+}
+
+function songRowRange(rowNumber) {
+  const sourceRange = publicConfig.songsRange || "Songs!A2:I";
+  const sheetName = sourceRange.includes("!") ? sourceRange.split("!")[0] : "Songs";
+  return `${sheetName}!A${rowNumber}:I${rowNumber}`;
+}
+
+async function saveSongRemote(songId) {
+  if (!backend.configured || backend.role !== "editor" || !backend.accessToken) return;
+  const song = state.songs.find((item) => item.id === songId);
+  if (!song) return;
+  try {
+    const values = songRowValues(song);
+    if (song.rowNumber) {
+      await writeSheetRange(songRowRange(song.rowNumber), [values], backend.accessToken);
+    } else {
+      const result = await appendSheetRow(values, backend.accessToken);
+      const updatedRange = result.updates?.updatedRange || "";
+      const rowMatch = updatedRange.match(/![A-Z]+(\d+):/);
+      if (rowMatch) song.rowNumber = Number(rowMatch[1]);
+    }
+    song.updatedAt = Date.parse(values[6]);
+    song.updatedBy = backend.userEmail;
+    song.version = values[8];
+    backend.dirtySongIds.delete(songId);
+    backend.remoteSaveTimers.delete(songId);
+    refreshSaveState();
+  } catch (error) {
+    console.warn("Cloud save failed", error);
+    showToast(error.status === 403 ? t("editorRequired") : t("cloudSaveFailed"));
+    if (error.status === 401 || error.status === 403) setAccessRole("viewer");
+  }
+}
+
+function scheduleRemoteSave(songId = state.activeId) {
+  if (!backend.configured || backend.role !== "editor" || !songId) return;
+  backend.dirtySongIds.add(songId);
+  refreshSaveState();
+  const previousTimer = backend.remoteSaveTimers.get(songId);
+  if (previousTimer) window.clearTimeout(previousTimer);
+  const timer = window.setTimeout(() => saveSongRemote(songId), 1200);
+  backend.remoteSaveTimers.set(songId, timer);
+}
+
+function setAccessRole(role) {
+  backend.role = role;
+  renderAccessState();
+}
+
+function waitForGoogleIdentity() {
+  if (window.google?.accounts?.oauth2) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      if (window.google?.accounts?.oauth2) {
+        window.clearInterval(timer);
+        resolve();
+      } else if (Date.now() - startedAt > 10000) {
+        window.clearInterval(timer);
+        reject(new Error("Google Identity Services did not load"));
+      }
+    }, 100);
+  });
+}
+
+async function requestGoogleAccessToken() {
+  await waitForGoogleIdentity();
+  return new Promise((resolve, reject) => {
+    backend.tokenClient = window.google.accounts.oauth2.initTokenClient({
+      client_id: publicConfig.googleClientId,
+      scope: "openid email https://www.googleapis.com/auth/spreadsheets",
+      callback(response) {
+        if (response?.error || !response?.access_token) reject(new Error(response?.error || "Missing access token"));
+        else resolve(response.access_token);
+      },
+      error_callback(error) { reject(new Error(error?.type || "Google sign-in failed")); }
+    });
+    backend.tokenClient.requestAccessToken({ prompt: "consent" });
+  });
+}
+
+async function readGoogleUserEmail(accessToken) {
+  try {
+    const profile = await googleApiRequest("https://openidconnect.googleapis.com/v1/userinfo", {
+      headers: authorizationHeaders(accessToken)
+    });
+    return profile.email || "";
+  } catch (_error) {
+    return "";
+  }
+}
+
+async function verifyEditorAccess(accessToken) {
+  const range = publicConfig.accessCheckRange || "_config!A1";
+  const current = await readSheetRange(range, accessToken);
+  const value = current.values?.[0]?.[0] || publicConfig.accessCheckValue || "worship-wiki-access-check";
+  await writeSheetRange(range, [[value]], accessToken);
+}
+
+async function signInWithGoogle() {
+  if (!backend.configured) return;
+  setAccessRole("checking");
+  try {
+    const accessToken = await requestGoogleAccessToken();
+    backend.accessToken = accessToken;
+    backend.userEmail = await readGoogleUserEmail(accessToken);
+    try {
+      await verifyEditorAccess(accessToken);
+      setAccessRole("editor");
+    } catch (error) {
+      if (error.status !== 401 && error.status !== 403) throw error;
+      setAccessRole("viewer");
+    }
+    await loadRemoteSongs({ accessToken, silent: true });
+  } catch (error) {
+    console.warn("Google sign-in failed", error);
+    backend.accessToken = "";
+    backend.userEmail = "";
+    setAccessRole("guest");
+    showToast(t("googleLoginFailed"));
+  }
+}
+
+function leaveEditMode() {
+  backend.accessToken = "";
+  backend.userEmail = "";
+  backend.dirtySongIds.clear();
+  backend.remoteSaveTimers.forEach((timer) => window.clearTimeout(timer));
+  backend.remoteSaveTimers.clear();
+  setAccessRole("guest");
+  elements.accessDialog.close();
+}
+
+function requestEditorAccess() {
+  if (!backend.configured || !publicConfig.adminEmail) {
+    showToast(t("requestUnavailable"));
+    return;
+  }
+  const subject = encodeURIComponent(t("accessRequestSubject"));
+  const body = encodeURIComponent(t("accessRequestBody", { email: backend.userEmail || "" }));
+  window.location.href = `mailto:${publicConfig.adminEmail}?subject=${subject}&body=${body}`;
+}
+
+async function initializeBackend() {
+  if (!backend.configured) {
+    setAccessRole("local");
+    return;
+  }
+  setAccessRole("guest");
+  await loadRemoteSongs();
+  const interval = Math.max(15000, Number(publicConfig.syncIntervalMs) || 30000);
+  backend.syncTimer = window.setInterval(() => {
+    const editing = [elements.title, elements.author, elements.lyrics].includes(document.activeElement);
+    if (!editing && !backend.dirtySongIds.size) void loadRemoteSongs({ silent: true });
+  }, interval);
+}
+
+function createSong({ title = t("untitledSong"), author = "", lyrics = t("firstLyricLine") } = {}) {
+  if (backend.configured && backend.role !== "editor") {
+    showToast(t("editorRequired"));
+    return null;
+  }
+  const id = `song-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  state.songs.unshift({ id, title, author, tags: t("newTag"), lyrics, updatedAt: Date.now() });
+  state.activeId = id;
+  renderLibrary();
+  renderEditor();
+  scheduleSave();
+  scheduleRemoteSave(id);
+  return activeSong();
+}
+
+elements.songList.addEventListener("click", (event) => {
+  const item = event.target.closest("[data-song-id]");
+  if (!item) return;
+  state.activeId = item.dataset.songId;
+  renderEditor();
+  scheduleSave();
+});
+elements.search.addEventListener("input", (event) => renderLibrary(event.target.value));
+elements.title.addEventListener("input", (event) => updateSong("title", event.target.value));
+elements.author.addEventListener("input", (event) => updateSong("author", event.target.value));
+elements.lyrics.addEventListener("input", (event) => updateSong("lyrics", event.target.value));
+
+$("#prevSlide").addEventListener("click", () => {
+  const count = paginate(activeSong().lyrics).length;
+  state.slideIndex = (state.slideIndex - 1 + count) % count;
+  renderPreview();
+});
+$("#nextSlide").addEventListener("click", () => {
+  const count = paginate(activeSong().lyrics).length;
+  state.slideIndex = (state.slideIndex + 1) % count;
+  renderPreview();
+});
+
+$$('[data-mode]').forEach((button) => button.addEventListener("click", () => {
+  state.pagination = button.dataset.mode;
+  state.slideIndex = 0;
+  renderControls();
+  renderPreview();
+  scheduleSave();
+}));
+$$('[data-theme]').forEach((button) => button.addEventListener("click", () => {
+  state.theme = button.dataset.theme;
+  activeSong().theme = state.theme;
+  renderControls();
+  scheduleSave();
+  scheduleRemoteSave(activeSong().id);
+}));
+$("[data-action='decrease-font']").addEventListener("click", () => {
+  state.fontSize = Math.max(32, state.fontSize - 2);
+  renderPreview();
+  scheduleSave();
+});
+$("[data-action='increase-font']").addEventListener("click", () => {
+  state.fontSize = Math.min(60, state.fontSize + 2);
+  renderPreview();
+  scheduleSave();
+});
+
+$("#newSongButton").addEventListener("click", () => {
+  const song = createSong();
+  if (song) elements.title.select();
+});
+$("#exportButton").addEventListener("click", () => {
+  elements.exportSlideCount.textContent = t("slidesCount", { count: paginate(activeSong().lyrics).length });
+  elements.exportDialog.showModal();
+});
+$$('[data-export-format]').forEach((button) => button.addEventListener("click", () => handleExport(button.dataset.exportFormat, button)));
+elements.accountButton.addEventListener("click", () => elements.accessDialog.showModal());
+elements.googleSignInButton.addEventListener("click", signInWithGoogle);
+elements.requestAccessButton.addEventListener("click", requestEditorAccess);
+elements.leaveEditModeButton.addEventListener("click", leaveEditMode);
+elements.languageSelect.addEventListener("change", (event) => {
+  state.locale = event.target.value;
+  translateInterface();
+  renderPreview();
+  scheduleSave();
+  showToast(t("languageChanged"));
+});
+$("[data-action='focus-library']").addEventListener("click", () => elements.search.focus());
+$("[data-action='show-guide']").addEventListener("click", () => elements.guideDialog.showModal());
+$(".more-button").addEventListener("click", () => showToast(t("localSaveInfo")));
+$("[data-action='sort-songs']").addEventListener("click", () => {
+  state.songs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  renderLibrary(elements.search.value);
+  scheduleSave();
+  showToast(t("sortedRecent"));
+});
+
+document.addEventListener("keydown", (event) => {
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+    event.preventDefault();
+    elements.search.focus();
+  }
+  if (event.key === "ArrowLeft" && event.altKey) $("#prevSlide").click();
+  if (event.key === "ArrowRight" && event.altKey) $("#nextSlide").click();
+});
+window.addEventListener("beforeunload", saveNow);
+
+function registerWebMcpTools() {
+  const context = document.modelContext;
+  if (!context?.registerTool) return;
+  const register = (tool) => {
+    try {
+      void Promise.resolve(context.registerTool(tool)).catch((error) => console.warn("WebMCP tool registration failed", error));
+    } catch (error) {
+      console.warn("WebMCP tool registration failed", error);
+    }
+  };
+
+  register({
+    name: "get_current_worship_deck",
+    title: "查看当前敬拜幻灯片",
+    description: "读取当前诗歌、主题、分页方式和已经生成的歌词页面。",
+    inputSchema: { type: "object", properties: {}, additionalProperties: false },
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    execute() {
+      const song = activeSong();
+      return { title: song.title, author: song.author, theme: state.theme, pagination: state.pagination, slides: paginate(song.lyrics) };
+    }
+  });
+
+  register({
+    name: "update_current_worship_song",
+    title: "更新当前敬拜诗歌",
+    description: "更新当前选中诗歌的标题、作者或歌词，并刷新可见的幻灯片预览。",
+    inputSchema: {
+      type: "object",
+      properties: { title: { type: "string" }, author: { type: "string" }, lyrics: { type: "string" } },
+      minProperties: 1,
+      additionalProperties: false
+    },
+    annotations: { readOnlyHint: false, untrustedContentHint: true },
+    execute(input) {
+      if (backend.configured && backend.role !== "editor") throw new Error(t("editorRequired"));
+      if (!input || typeof input !== "object" || !["title", "author", "lyrics"].some((field) => typeof input[field] === "string")) {
+        throw new Error("请至少提供 title、author 或 lyrics 中的一项文本内容。");
+      }
+      ["title", "author", "lyrics"].forEach((field) => {
+        if (typeof input[field] === "string") activeSong()[field] = input[field];
+      });
+      activeSong().updatedAt = Date.now();
+      renderEditor();
+      saveNow();
+      scheduleRemoteSave(activeSong().id);
+      return { updated: true, id: activeSong().id, title: activeSong().title, slideCount: paginate(activeSong().lyrics).length };
+    }
+  });
+
+  register({
+    name: "create_worship_song",
+    title: "新建敬拜诗歌",
+    description: "在曲库中新建诗歌并将它显示在编辑器中。",
+    inputSchema: {
+      type: "object",
+      properties: { title: { type: "string" }, author: { type: "string" }, lyrics: { type: "string" } },
+      required: ["title", "lyrics"],
+      additionalProperties: false
+    },
+    annotations: { readOnlyHint: false, untrustedContentHint: true },
+    execute(input) {
+      if (backend.configured && backend.role !== "editor") throw new Error(t("editorRequired"));
+      if (!input || typeof input.title !== "string" || typeof input.lyrics !== "string") {
+        throw new Error("title 和 lyrics 都必须是文本。");
+      }
+      const song = createSong(input);
+      saveNow();
+      return { created: true, id: song.id, title: song.title, slideCount: paginate(song.lyrics).length };
+    }
+  });
+}
+
+translateInterface();
+renderLibrary();
+renderEditor();
+registerWebMcpTools();
+void initializeBackend();

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="为教会敬拜团队整理歌词、自动分页并生成投影幻灯片。"
+    />
+    <meta name="theme-color" content="#152a53" />
+    <title>敬拜百科 · Worship Wiki</title>
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="敬拜百科首页" data-i18n-aria="brandHome">
+          <span class="brand-mark" aria-hidden="true">W</span>
+          <span>
+            <strong data-i18n="brandName">敬拜百科</strong>
+            <small>WORSHIP WIKI</small>
+          </span>
+        </a>
+
+        <nav class="topnav" aria-label="主要导航" data-i18n-aria="mainNav">
+          <button class="nav-link active" type="button" data-i18n="studio">制作台</button>
+          <button class="nav-link" type="button" data-action="focus-library" data-i18n="library">曲库</button>
+          <button class="nav-link" type="button" data-action="show-guide" data-i18n="guide">使用说明</button>
+        </nav>
+
+        <div class="header-actions">
+          <button class="account-button" id="accountButton" type="button" data-role="local" aria-haspopup="dialog">
+            <i class="account-dot" aria-hidden="true"></i>
+            <span id="accountLabel">本地模式</span>
+          </button>
+          <label class="language-switcher">
+            <span class="sr-only" data-i18n="languageLabel">界面语言</span>
+            <span aria-hidden="true">文</span>
+            <select id="languageSelect" aria-label="界面语言" data-i18n-aria="languageLabel">
+              <option value="zh-CN">简体</option>
+              <option value="zh-TW">繁體</option>
+              <option value="en">EN</option>
+            </select>
+          </label>
+          <span class="save-state" id="saveState"><i></i> 已在此设备保存</span>
+          <button class="button button-primary" id="exportButton" type="button" data-i18n="exportSlides">
+            导出幻灯片
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="library-panel" id="libraryPanel" aria-label="敬拜歌曲库" data-i18n-aria="worshipLibrary">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow" data-i18n="myLibrary">我的曲库</p>
+              <h1 data-i18n="worshipSongs">敬拜诗歌</h1>
+            </div>
+            <button class="icon-button" id="newSongButton" type="button" aria-label="新建诗歌" data-i18n-aria="newSong">＋</button>
+          </div>
+
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <span class="sr-only" data-i18n="searchSong">搜索诗歌</span>
+            <input id="songSearch" type="search" placeholder="搜索歌名或主题…" data-i18n-placeholder="searchPlaceholder" />
+            <kbd>⌘ K</kbd>
+          </label>
+
+          <div class="library-meta">
+            <span id="songCount">5 首诗歌</span>
+            <button class="text-button" type="button" data-action="sort-songs" data-i18n="sortRecent">按最近编辑</button>
+          </div>
+
+          <div class="song-list" id="songList"></div>
+
+          <div class="library-note">
+            <span class="note-glyph" aria-hidden="true">✦</span>
+            <div>
+              <strong data-i18n="tip">小提示</strong>
+              <p data-i18n="blankTip">空行会成为幻灯片的自然分页点。</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="editor-panel" aria-label="歌词编辑器" data-i18n-aria="lyricsEditor">
+          <div class="editor-topline">
+            <div class="breadcrumb"><span data-i18n="library">曲库</span><b>/</b><strong id="breadcrumbTitle">诸天颂赞</strong></div>
+            <button class="more-button" type="button" aria-label="更多选项" data-i18n-aria="moreOptions">•••</button>
+          </div>
+
+          <div class="title-fields">
+            <label>
+              <span data-i18n="songName">诗歌名称</span>
+              <input id="songTitle" value="诸天颂赞" />
+            </label>
+            <label>
+              <span data-i18n="authorSource">作者 / 来源</span>
+              <input id="songAuthor" value="示例诗歌" />
+            </label>
+          </div>
+
+          <div class="section-rule"><span data-i18n="lyricsPagination">歌词与分页</span><i></i></div>
+
+          <div class="editor-toolbar" aria-label="歌词格式工具栏" data-i18n-aria="lyricsToolbar">
+            <button class="tool-button active" type="button" data-mode="auto" data-i18n="autoPaginate">自动分页</button>
+            <button class="tool-button" type="button" data-mode="blank" data-i18n="blankPaginate">按空行分页</button>
+            <span class="toolbar-divider"></span>
+            <button class="tool-icon" type="button" data-action="decrease-font" aria-label="缩小字号" data-i18n-aria="decreaseFont">A−</button>
+            <span class="font-size" id="fontSizeLabel">44</span>
+            <button class="tool-icon" type="button" data-action="increase-font" aria-label="放大字号" data-i18n-aria="increaseFont">A＋</button>
+          </div>
+
+          <label class="lyrics-field">
+            <span class="sr-only" data-i18n="lyrics">歌词</span>
+            <textarea id="lyricsInput" spellcheck="false">诸天述说祢手中的荣美
+晨光宣告祢信实不改变
+万有同声，颂赞祢的圣名
+我的心也要永远歌唱
+
+荣耀归祢，慈爱的君王
+盼望归祢，黑夜的真光
+一生一世，我要寻求祢
+从今直到永远</textarea>
+          </label>
+
+          <div class="editor-foot">
+            <span id="lyricsStats">8 行 · 2 张幻灯片</span>
+            <span data-i18n="editedJustNow">最近编辑：刚刚</span>
+          </div>
+        </section>
+
+        <section class="preview-panel" aria-label="幻灯片预览" data-i18n-aria="slidePreview">
+          <div class="preview-heading">
+            <div>
+              <p class="eyebrow light" data-i18n="livePreview">实时预览</p>
+              <h2 data-i18n="stageScreen">舞台画面</h2>
+            </div>
+            <div class="aspect-chip">16:9</div>
+          </div>
+
+          <div class="slide-frame theme-midnight" id="slideFrame">
+            <div class="slide-ornament" aria-hidden="true"></div>
+            <div class="slide-content" id="slideContent"></div>
+            <span class="slide-song-title" id="slideSongTitle">诸天颂赞</span>
+          </div>
+
+          <div class="slide-nav">
+            <button class="round-button" id="prevSlide" type="button" aria-label="上一张" data-i18n-aria="previousSlide">←</button>
+            <span><strong id="currentSlide">1</strong> / <span id="totalSlides">2</span></span>
+            <button class="round-button" id="nextSlide" type="button" aria-label="下一张" data-i18n-aria="nextSlide">→</button>
+          </div>
+
+          <div class="section-rule dark"><span data-i18n="visualStyle">画面样式</span><i></i></div>
+
+          <div class="theme-grid" id="themeGrid" aria-label="选择画面样式" data-i18n-aria="chooseVisualStyle">
+            <button class="theme-card active" type="button" data-theme="midnight">
+              <span class="theme-swatch midnight"><i></i></span>
+              <span data-i18n="themeMidnight">深夜穹顶</span>
+            </button>
+            <button class="theme-card" type="button" data-theme="parchment">
+              <span class="theme-swatch parchment"><i></i></span>
+              <span data-i18n="themeParchment">古典纸页</span>
+            </button>
+            <button class="theme-card" type="button" data-theme="dawn">
+              <span class="theme-swatch dawn"><i></i></span>
+              <span data-i18n="themeDawn">晨光旷野</span>
+            </button>
+          </div>
+
+          <div class="projection-note">
+            <span aria-hidden="true">◉</span>
+            <p><strong data-i18n="safeArea">投影安全区</strong><br /><span data-i18n="safeAreaText">文字已保持在屏幕边缘以内。</span></p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="access-dialog" id="accessDialog" aria-labelledby="accessTitle">
+      <form method="dialog" class="dialog-card access-card">
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow" data-i18n="accessControl">访问权限</p>
+            <h2 id="accessTitle" data-i18n="editAccessTitle">编辑者登录</h2>
+          </div>
+          <button class="dialog-close" value="cancel" aria-label="关闭" data-i18n-aria="close">×</button>
+        </div>
+
+        <div class="access-status" id="accessStatus" data-role="local">
+          <span class="access-status-icon" aria-hidden="true">W</span>
+          <div>
+            <strong id="accessStatusTitle">本地草稿模式</strong>
+            <p id="accessStatusText">连接 Google Sheet 后，只有受邀账号可以编辑。</p>
+          </div>
+        </div>
+
+        <div class="access-actions">
+          <button class="button google-button" id="googleSignInButton" type="button">
+            <span aria-hidden="true">G</span><span data-i18n="signInGoogle">使用 Google 登录</span>
+          </button>
+          <button class="button request-button" id="requestAccessButton" type="button" hidden data-i18n="requestAccess">申请编辑权限</button>
+          <button class="button request-button" id="leaveEditModeButton" type="button" hidden data-i18n="leaveEditMode">退出编辑模式</button>
+        </div>
+
+        <p class="admin-contact" id="adminContact" hidden>
+          <span data-i18n="adminLabel">管理员：</span>
+          <a id="adminEmailLink" href="#"></a>
+        </p>
+        <p class="dialog-footnote" data-i18n="accessSecurityNote">编辑权限由 Google Drive 共享设置强制执行。</p>
+      </form>
+    </dialog>
+
+    <dialog class="export-dialog" id="exportDialog" aria-labelledby="exportTitle">
+      <form method="dialog" class="dialog-card">
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow" data-i18n="readyToShare">准备分享</p>
+            <h2 id="exportTitle" data-i18n="exportSlides">导出幻灯片</h2>
+          </div>
+          <button class="dialog-close" value="cancel" aria-label="关闭" data-i18n-aria="close">×</button>
+        </div>
+        <p class="dialog-intro" id="exportIntro"><span data-i18n="exportIntroBefore">将以当前主题和分页生成 </span><strong id="exportSlideCount">2 张</strong><span data-i18n="exportIntroAfter"> 16:9 幻灯片。</span></p>
+        <div class="export-options">
+          <button class="export-option" type="button" data-export-format="pptx">
+            <span class="file-glyph file-ppt">P</span>
+            <span><strong>PowerPoint</strong><small data-i18n="pptDescription">通用演示文件 · .pptx</small></span>
+            <i data-i18n="generate">生成</i>
+          </button>
+          <button class="export-option" type="button" data-export-format="keynote">
+            <span class="file-glyph file-key">K</span>
+            <span><strong>Keynote</strong><small data-i18n="keynoteDescription">导入兼容文件 · .pptx</small></span>
+            <i data-i18n="generate">生成</i>
+          </button>
+          <button class="export-option" type="button" data-export-format="pdf">
+            <span class="file-glyph file-pdf">PDF</span>
+            <span><strong>PDF</strong><small data-i18n="pdfDescription">画面固定 · 适合分享</small></span>
+            <i data-i18n="generate">生成</i>
+          </button>
+        </div>
+        <p class="dialog-footnote" data-i18n="privacy">文件只在你的浏览器中生成，歌词不会上传。</p>
+      </form>
+    </dialog>
+
+    <dialog class="guide-dialog" id="guideDialog" aria-labelledby="guideTitle">
+      <form method="dialog" class="dialog-card guide-card">
+        <div class="dialog-header">
+          <div>
+            <p class="eyebrow" data-i18n="threeSteps">三步完成</p>
+            <h2 id="guideTitle" data-i18n="guideTitle">从歌词到舞台</h2>
+          </div>
+          <button class="dialog-close" value="cancel" aria-label="关闭" data-i18n-aria="close">×</button>
+        </div>
+        <ol class="guide-steps">
+          <li><b>01</b><span><strong data-i18n="addLyrics">添加歌词</strong><small data-i18n="addLyricsDesc">新建诗歌，或从曲库选择并修改。</small></span></li>
+          <li><b>02</b><span><strong data-i18n="checkPagination">检查分页</strong><small data-i18n="checkPaginationDesc">每四行自动分页；也可用空行指定页面。</small></span></li>
+          <li><b>03</b><span><strong data-i18n="chooseExport">选择并导出</strong><small data-i18n="chooseExportDesc">挑选画面主题，再生成 PPTX、Keynote 兼容文件或 PDF。</small></span></li>
+        </ol>
+        <button class="button button-primary full-button" value="cancel" data-i18n="startCreating">开始制作</button>
+      </form>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./config.js"></script>
+    <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+    <script src="./app-v2.js"></script>
+  </body>
+</html>
