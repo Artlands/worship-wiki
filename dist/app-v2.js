@@ -680,8 +680,8 @@ function sanitizeFileName(value) {
 
 // Shrink-to-fit used by both the raster export and the PowerPoint text boxes,
 // so an editable deck sizes its words the same way the preview did.
-function fitFontPx(context, lines, width, fontStack) {
-  let fontPx = Math.min(state.fontSize * 1.78, 98);
+function fitFontPx(context, lines, width, fontStack, scale = 1) {
+  let fontPx = Math.min(state.fontSize * 1.78, 98) * scale;
   const maxTextWidth = width * 0.82;
   do {
     context.font = `700 ${fontPx}px ${fontStack}`;
@@ -762,8 +762,33 @@ function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {
 
   if (!withText) return canvas;
 
-  const fontPx = fitFontPx(context, lines, width, state.font === "sans" ? canvasSans : canvasSerif);
-  context.font = `700 ${fontPx}px ${state.font === "sans" ? canvasSans : canvasSerif}`;
+  const stack = state.font === "sans" ? canvasSans : canvasSerif;
+  if (state.theme !== "parchment") {
+    context.shadowColor = "rgba(0,0,0,.28)";
+    context.shadowBlur = 16;
+    context.shadowOffsetY = 4;
+  }
+
+  if (isTitle) {
+    const [name, ...rest] = lines;
+    const namePx = fitFontPx(context, [name], width, stack, TITLE_SCALE);
+    const gap = namePx * 0.85;
+    const nameY = rest.length ? height / 2 - gap / 2 : height / 2;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = textColor;
+    context.font = `700 ${namePx}px ${stack}`;
+    context.fillText(name, width / 2, nameY);
+    if (rest.length) {
+      context.font = `500 ${Math.round(namePx * TITLE_AUTHOR_RATIO)}px ${stack}`;
+      context.fillText(rest.join(" · "), width / 2, nameY + gap);
+    }
+    context.shadowColor = "transparent";
+    return canvas;
+  }
+
+  const fontPx = fitFontPx(context, lines, width, stack);
+  context.font = `700 ${fontPx}px ${stack}`;
 
   const lineHeight = fontPx * 1.62;
   const groupHeight = Math.max(0, (lines.length - 1) * lineHeight);
@@ -771,11 +796,6 @@ function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillStyle = textColor;
-  if (state.theme !== "parchment") {
-    context.shadowColor = "rgba(0,0,0,.28)";
-    context.shadowBlur = 16;
-    context.shadowOffsetY = 4;
-  }
   lines.forEach((line, index) => context.fillText(line, width / 2, startY + index * lineHeight));
   context.shadowColor = "transparent";
   if (state.caption !== "none" && !isTitle) {
@@ -790,6 +810,10 @@ function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {
   }
   return canvas;
 }
+
+// The title slide sets the song name against a quieter author line.
+const TITLE_SCALE = 1.35;
+const TITLE_AUTHOR_RATIO = 0.42;
 
 const MAX_BACKGROUND_BYTES = 12 * 1024 * 1024;
 
@@ -876,6 +900,23 @@ async function exportPptx(fileName, keynoteCompatible = false) {
   pages.forEach((lines, index) => {
     const slide = deck.addSlide({ masterName });
     const isTitle = opening && index === 0;
+
+    if (isTitle) {
+      // two runs in one box, so the name and the author keep their own sizes
+      const [name, ...rest] = lines;
+      const namePx = fitFontPx(measure, [name], pxW, `"${fontFace}", sans-serif`, TITLE_SCALE);
+      const runs = [{ text: name, options: { fontSize: Math.round(namePx * ptPerPx), bold: true, breakLine: rest.length > 0 } }];
+      if (rest.length) {
+        runs.push({ text: rest.join(" · "), options: { fontSize: Math.round(namePx * TITLE_AUTHOR_RATIO * ptPerPx), bold: false } });
+      }
+      slide.addText(runs, {
+        x: 0, y: 0, w: inW, h: inH,
+        align: "center", valign: "middle",
+        fontFace, color: bodyColor, lineSpacingMultiple: 1.3,
+        shadow: dark ? { type: "outer", color: "000000", opacity: 0.28, blur: 8, offset: 2, angle: 90 } : undefined
+      });
+      return;
+    }
 
     const fontPx = fitFontPx(measure, lines, pxW, `"${fontFace}", sans-serif`);
     slide.addText(lines.join("\n"), {
