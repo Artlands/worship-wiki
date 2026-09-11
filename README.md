@@ -62,7 +62,11 @@ In the sharing settings, turn off **Editors can change permissions and share** s
 
 ### 4. Fill in the site configuration
 
-Edit [`dist/config.js`](dist/config.js):
+`dist/config.js` is gitignored so your credentials stay local. Copy the template and fill it in:
+
+```bash
+cp dist/config.example.js dist/config.js
+```
 
 ```js
 window.WORSHIP_WIKI_CONFIG = Object.freeze({
