@@ -419,8 +419,11 @@ function renderEditor() {
   const song = activeSong();
   // An empty library is a valid state: blank the editor rather than inventing a song.
   elements.editorPanel.classList.toggle("is-empty", !song);
-  [elements.title, elements.author, elements.tags, elements.lyrics].forEach((field) => {
-    field.value = song ? song[field.dataset.field] || "" : "";
+  // Pairs, not a data-attribute lookup: a missing attribute silently blanked the
+  // field it was meant to fill, and a blank lyrics box is one keystroke from data loss.
+  [[elements.title, "title"], [elements.author, "author"],
+   [elements.tags, "tags"], [elements.lyrics, "lyrics"]].forEach(([field, key]) => {
+    field.value = song ? song[key] || "" : "";
     field.disabled = !song;
   });
   if (!song) {
