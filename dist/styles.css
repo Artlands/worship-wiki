@@ -723,9 +723,11 @@ kbd {
 .section-rule.dark i { background: var(--line); }
 
 .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.theme-card { padding: 7px; border: 1px solid transparent; border-radius: var(--radius); background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
-.theme-card.active { border-color: var(--gold-bright); color: var(--ink); }
-.theme-swatch { aspect-ratio: 16 / 9; display: block; margin-bottom: 7px; border-radius: var(--radius); position: relative; overflow: hidden; }
+/* No padding or border box: the swatch edge has to line up with the buttons
+   below it, so the selected ring is an outline, which takes no layout space. */
+.theme-card { padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; }
+.theme-card.active { color: var(--ink); outline: 1px solid var(--gold-bright); outline-offset: 3px; }
+.theme-swatch { aspect-ratio: 16 / 9; display: block; margin-bottom: 6px; border-radius: var(--radius); position: relative; overflow: hidden; }
 .theme-swatch i { position: absolute; width: 35%; height: 3px; left: 32%; top: 48%; background: rgba(255,255,255,.75); box-shadow: 0 7px 0 rgba(255,255,255,.48); }
 .theme-swatch.midnight { background: linear-gradient(135deg, #06142e, #1d4d7c); }
 .theme-swatch.parchment { background: linear-gradient(135deg, #f2ead8, #cdb784); }
