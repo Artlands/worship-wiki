@@ -92,7 +92,11 @@
         <section class="editor-panel" aria-label="歌词编辑器" data-i18n-aria="lyricsEditor">
           <div class="editor-topline">
             <div class="breadcrumb"><span data-i18n="library">曲库</span><b>/</b><strong id="breadcrumbTitle">诸天颂赞</strong></div>
-            <button class="more-button" type="button" aria-label="更多选项" data-i18n-aria="moreOptions">•••</button>
+            <button class="more-button" type="button" data-action="delete-song" aria-label="删除诗歌" data-i18n-aria="deleteSong">
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.6 4.2h10.8M6.4 4.2V2.6h3.2v1.6M4.2 4.2l.6 9.2h6.4l.6-9.2M6.6 6.9v3.8M9.4 6.9v3.8"/>
+              </svg>
+            </button>
           </div>
 
           <div class="title-fields">

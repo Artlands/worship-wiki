@@ -54,7 +54,7 @@ const translations = {
     newSong: "新建诗歌", searchSong: "搜索诗歌", searchPlaceholder: "搜索歌名或主题…",
     songCount: "{count} 首诗歌", sortRecent: "按最近编辑", tip: "小提示",
     blankTip: "空行会成为幻灯片的自然分页点。", lyricsEditor: "歌词编辑器",
-    moreOptions: "更多选项", songName: "诗歌名称", authorSource: "作者 / 来源",
+    songName: "诗歌名称", authorSource: "作者 / 来源",
     lyricsPagination: "歌词与分页", lyricsToolbar: "歌词格式工具栏",
     autoPaginate: "自动分页", blankPaginate: "按空行分页", decreaseFont: "缩小字号",
     increaseFont: "放大字号", lyrics: "歌词", editedJustNow: "最近编辑：刚刚",
@@ -78,7 +78,7 @@ const translations = {
     pdfLoadError: "PDF 组件尚未加载，请检查网络后重试。", exportSubject: "敬拜歌词幻灯片",
     keynoteReady: "已生成 Keynote 可导入的 PPTX 文件", slidesReady: "幻灯片已生成",
     exportFailed: "导出失败，请稍后重试", firstLyricLine: "在这里输入第一行歌词",
-    newTag: "新建", localSaveInfo: "这首诗歌会自动保存在当前设备",
+    newTag: "新建",
     sortedRecent: "已按最近编辑排序", languageChanged: "界面语言已更新",
     accessControl: "访问权限", editAccessTitle: "编辑者登录", accountLocal: "本地模式",
     accountGuest: "访客 · 只读", accountChecking: "检查权限…", accountViewer: "等待邀请",
@@ -94,6 +94,7 @@ const translations = {
     googleLoading: "正在加载 Google 登录…", googleLoginFailed: "Google 登录失败，请稍后重试",
     cloudLoadFailed: "暂时无法读取云端曲库，已保留本地内容", cloudSaveFailed: "云端保存失败，请检查网络或权限",
     cloudSaved: "已同步到 Google Sheet", editorRequired: "只有受邀编辑者可以修改歌词",
+    deleteSong: "删除诗歌", confirmDelete: "确定删除《{title}》吗？此操作无法撤销。", songDeleted: "诗歌已删除",
     requestUnavailable: "管理员邮箱尚未配置", accessRequestSubject: "申请加入敬拜百科编辑团队",
     accessRequestBody: "你好，我希望使用以下 Google 账号加入敬拜百科编辑团队：\n\n{email}\n\n请在 Google Sheet 中邀请此账号为编辑者。谢谢！"
   },
@@ -107,7 +108,7 @@ const translations = {
     newSong: "新增詩歌", searchSong: "搜尋詩歌", searchPlaceholder: "搜尋歌名或主題…",
     songCount: "{count} 首詩歌", sortRecent: "按最近編輯", tip: "小提示",
     blankTip: "空白行會成為投影片的自然分頁點。", lyricsEditor: "歌詞編輯器",
-    moreOptions: "更多選項", songName: "詩歌名稱", authorSource: "作者 / 來源",
+    songName: "詩歌名稱", authorSource: "作者 / 來源",
     lyricsPagination: "歌詞與分頁", lyricsToolbar: "歌詞格式工具列",
     autoPaginate: "自動分頁", blankPaginate: "按空白行分頁", decreaseFont: "縮小字級",
     increaseFont: "放大字級", lyrics: "歌詞", editedJustNow: "最近編輯：剛剛",
@@ -131,7 +132,7 @@ const translations = {
     pdfLoadError: "PDF 元件尚未載入，請檢查網路後重試。", exportSubject: "敬拜歌詞投影片",
     keynoteReady: "已產生 Keynote 可匯入的 PPTX 檔案", slidesReady: "投影片已產生",
     exportFailed: "匯出失敗，請稍後重試", firstLyricLine: "在這裡輸入第一行歌詞",
-    newTag: "新增", localSaveInfo: "這首詩歌會自動儲存於目前裝置",
+    newTag: "新增",
     sortedRecent: "已按最近編輯排序", languageChanged: "介面語言已更新",
     accessControl: "存取權限", editAccessTitle: "編輯者登入", accountLocal: "本機模式",
     accountGuest: "訪客 · 唯讀", accountChecking: "檢查權限…", accountViewer: "等待邀請",
@@ -147,6 +148,7 @@ const translations = {
     googleLoading: "正在載入 Google 登入…", googleLoginFailed: "Google 登入失敗，請稍後重試",
     cloudLoadFailed: "暫時無法讀取雲端曲庫，已保留本機內容", cloudSaveFailed: "雲端儲存失敗，請檢查網路或權限",
     cloudSaved: "已同步到 Google Sheet", editorRequired: "只有受邀編輯者可以修改歌詞",
+    deleteSong: "刪除詩歌", confirmDelete: "確定刪除《{title}》嗎？此操作無法復原。", songDeleted: "詩歌已刪除",
     requestUnavailable: "管理員電子郵件尚未設定", accessRequestSubject: "申請加入敬拜百科編輯團隊",
     accessRequestBody: "你好，我希望使用以下 Google 帳號加入敬拜百科編輯團隊：\n\n{email}\n\n請在 Google Sheet 中邀請此帳號為編輯者。謝謝！"
   },
@@ -160,7 +162,7 @@ const translations = {
     newSong: "Add song", searchSong: "Search songs", searchPlaceholder: "Search title or theme…",
     songCount: "{count} songs", sortRecent: "Recently edited", tip: "Tip",
     blankTip: "Blank lines create natural slide breaks.", lyricsEditor: "Lyrics editor",
-    moreOptions: "More options", songName: "Song title", authorSource: "Author / source",
+    songName: "Song title", authorSource: "Author / source",
     lyricsPagination: "Lyrics & pagination", lyricsToolbar: "Lyrics formatting toolbar",
     autoPaginate: "Auto paginate", blankPaginate: "Split on blank lines", decreaseFont: "Decrease font size",
     increaseFont: "Increase font size", lyrics: "Lyrics", editedJustNow: "Edited just now",
@@ -184,7 +186,7 @@ const translations = {
     pdfLoadError: "The PDF exporter has not loaded. Check your connection and try again.", exportSubject: "Worship lyric slides",
     keynoteReady: "Created a PPTX file ready to import into Keynote", slidesReady: "Your slides are ready",
     exportFailed: "Export failed. Please try again.", firstLyricLine: "Enter the first line of lyrics here",
-    newTag: "New", localSaveInfo: "This song is saved automatically on this device",
+    newTag: "New",
     sortedRecent: "Sorted by recent edits", languageChanged: "Interface language updated",
     accessControl: "Access control", editAccessTitle: "Editor access", accountLocal: "Local mode",
     accountGuest: "Guest · Read only", accountChecking: "Checking access…", accountViewer: "Awaiting invite",
@@ -200,6 +202,7 @@ const translations = {
     googleLoading: "Loading Google sign-in…", googleLoginFailed: "Google sign-in failed. Please try again.",
     cloudLoadFailed: "The cloud library is unavailable. Local content is still available.", cloudSaveFailed: "Cloud save failed. Check your connection or access.",
     cloudSaved: "Synced to Google Sheets", editorRequired: "Only invited editors can change lyrics",
+    deleteSong: "Delete song", confirmDelete: "Delete \"{title}\"? This cannot be undone.", songDeleted: "Song deleted",
     requestUnavailable: "The administrator email has not been configured", accessRequestSubject: "Request to join the Worship Wiki editing team",
     accessRequestBody: "Hello, I would like to join the Worship Wiki editing team using this Google account:\n\n{email}\n\nPlease invite this account as an editor in Google Sheets. Thank you!"
   }
@@ -727,6 +730,45 @@ async function saveSongRemote(songId) {
   }
 }
 
+async function deleteActiveSong() {
+  const song = activeSong();
+  if (!song) return;
+  if (backend.configured && backend.role !== "editor") {
+    showToast(t("editorRequired"));
+    return;
+  }
+  const label = song.title || t("untitledSong");
+  if (!window.confirm(t("confirmDelete").replace("{title}", label))) return;
+
+  // Drop any queued cloud write first, or it would re-create the row we are removing.
+  const pending = backend.remoteSaveTimers.get(song.id);
+  if (pending) window.clearTimeout(pending);
+  backend.remoteSaveTimers.delete(song.id);
+  backend.dirtySongIds.delete(song.id);
+
+  state.songs = state.songs.filter((item) => item.id !== song.id);
+  if (state.songs.length) {
+    state.activeId = state.songs[0].id;
+    renderLibrary(elements.search.value);
+    renderEditor();
+  } else {
+    createSong();
+  }
+  saveNow();
+  refreshSaveState();
+  showToast(t("songDeleted"));
+
+  if (!song.rowNumber || backend.role !== "editor" || !backend.accessToken) return;
+  try {
+    // Blank the row instead of deleting it: saveSongRemote() addresses rows by
+    // rowNumber, and removing a row would shift every song below it.
+    await writeSheetRange(songRowRange(song.rowNumber), [Array(9).fill("")], backend.accessToken);
+  } catch (error) {
+    console.warn("Cloud delete failed", error);
+    showToast(t("cloudSaveFailed"));
+  }
+}
+
 function scheduleRemoteSave(songId = state.activeId) {
   if (!backend.configured || backend.role !== "editor" || !songId) return;
   backend.dirtySongIds.add(songId);
@@ -935,7 +977,7 @@ elements.languageSelect.addEventListener("change", (event) => {
 });
 $("[data-action='focus-library']").addEventListener("click", () => elements.search.focus());
 $("[data-action='show-guide']").addEventListener("click", () => elements.guideDialog.showModal());
-$(".more-button").addEventListener("click", () => showToast(t("localSaveInfo")));
+$("[data-action='delete-song']").addEventListener("click", () => void deleteActiveSong());
 $("[data-action='sort-songs']").addEventListener("click", () => {
   state.songs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
   renderLibrary(elements.search.value);
