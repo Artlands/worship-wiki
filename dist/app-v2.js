@@ -518,7 +518,6 @@ function renderEditor() {
     renderPreview();
     return;
   }
-  if (THEME_NAMES.includes(song.theme)) state.theme = song.theme;
   elements.breadcrumb.textContent = song.title || t("untitledSong");
   state.slideIndex = 0;
   refreshTagSuggestions();
@@ -1138,10 +1137,9 @@ $$('[data-mode]').forEach((button) => button.addEventListener("click", () => {
 }));
 $$('[data-theme]').forEach((button) => button.addEventListener("click", () => {
   state.theme = button.dataset.theme;
-  activeSong().theme = state.theme;
   renderControls();
-  scheduleSave();
-  markSongDirty(activeSong().id);
+  renderPreview();
+  saveNow();
 }));
 $("[data-action='decrease-font']").addEventListener("click", () => {
   state.fontSize = Math.max(32, state.fontSize - 2);
