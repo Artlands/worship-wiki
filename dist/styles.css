@@ -416,18 +416,18 @@ kbd {
 .song-copy span { display: block; overflow: hidden; color: var(--muted); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 .song-pages { color: var(--gold); font-size: 11px; }
 
-.library-note {
-  margin-top: 24px;
-  padding: 16px;
+.editor-note {
+  margin-top: 12px;
   display: flex;
-  gap: 11px;
-  border-top: 1px solid var(--line);
+  align-items: flex-start;
+  gap: 9px;
   color: var(--muted);
   font-size: 12px;
 }
 
-.library-note strong { color: var(--ink); }
-.library-note p { margin: 4px 0 0; line-height: 1.65; }
+
+.editor-note strong { color: var(--ink); }
+.editor-note p { margin: 3px 0 0; line-height: 1.6; }
 .note-glyph { color: var(--gold); }
 
 .editor-panel {
@@ -896,7 +896,7 @@ dialog::backdrop {
   .library-panel, .editor-panel, .preview-panel { padding: 24px 18px; border-right: 0; }
   .library-panel { border-bottom: 1px solid var(--line); }
   .song-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .library-note { display: none; }
+  .editor-note { display: none; }
   .title-fields { grid-template-columns: 1fr; }
   .lyrics-field textarea { min-height: 360px; }
   .slide-content { font-size: clamp(13px, 4.6vw, 26px); }
