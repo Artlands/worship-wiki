@@ -368,6 +368,23 @@ h1, h2 { font-family: var(--serif); }
   100% { box-shadow: 0 0 0 13px rgba(23, 74, 134, 0); }
 }
 
+.site-footer {
+  padding: 18px 26px 22px;
+  background: var(--night-2);
+  border-top: 1px solid var(--line);
+}
+.site-footer p {
+  max-width: 860px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  text-align: center;
+}
+.site-footer strong { margin-right: 6px; color: var(--ink); }
+.site-footer .footer-contact { margin-top: 6px; }
+.site-footer a { color: var(--gold); }
+
 @media (prefers-reduced-motion: reduce) {
   .search-box.is-pinged { animation: none; }
 }
