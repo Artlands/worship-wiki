@@ -1,3 +1,5 @@
+.DS_Store
+
 dist/config.js
 
 # the sheet template: only the config and the seed example are synced
