@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#071013" />
     <title>敬拜百科 · Worship Wiki</title>
-    <link rel="icon" href="./icon.svg?v=20" type="image/svg+xml" />
+    <link rel="icon" href="./icon.svg?v=21" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=20" />
+    <link rel="stylesheet" href="./styles.css?v=21" />
   </head>
   <body>
     <div class="app-shell">
@@ -181,14 +181,6 @@
             <span id="lyricsStats">8 行 · 2 张幻灯片</span>
             <span data-i18n="editedJustNow">最近编辑：刚刚</span>
           </div>
-
-          <div class="editor-note">
-            <span class="note-glyph" aria-hidden="true">✦</span>
-            <div>
-              <strong data-i18n="tip">小提示</strong>
-              <p data-i18n="blankTip">空行会成为幻灯片的自然分页点。</p>
-            </div>
-          </div>
         </section>
 
         <section class="preview-panel" aria-label="幻灯片预览" data-i18n-aria="slidePreview">
@@ -277,6 +269,7 @@
           </button>
           <button class="button request-button" id="requestAccessButton" type="button" hidden data-i18n="requestAccess">申请编辑权限</button>
           <button class="button request-button" id="leaveEditModeButton" type="button" hidden data-i18n="leaveEditMode">退出编辑模式</button>
+          <button class="button request-button" id="restoreCloudButton" type="button" hidden data-i18n="restoreCloud">放弃本地修改，重新载入云端曲库</button>
         </div>
 
         <p class="admin-contact" id="adminContact" hidden>
@@ -341,6 +334,6 @@
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-    <script src="./app-v2.js?v=20"></script>
+    <script src="./app-v2.js?v=21"></script>
   </body>
 </html>

@@ -85,8 +85,7 @@ const translations = {
     saved: "已在此设备保存", saving: "正在保存…", exportSlides: "导出幻灯片",
     worshipLibrary: "敬拜歌曲库", myLibrary: "我的曲库", worshipSongs: "敬拜诗歌",
     newSong: "新建诗歌", searchSong: "搜索诗歌", searchPlaceholder: "搜索歌名或主题…",
-    songCount: "{count} 首诗歌", sortRecent: "按最近编辑", tip: "小提示",
-    blankTip: "空行会成为幻灯片的自然分页点。", lyricsEditor: "歌词编辑器",
+    songCount: "{count} 首诗歌", sortRecent: "按最近编辑", lyricsEditor: "歌词编辑器",
     songName: "诗歌名称", authorSource: "作者 / 来源",
     lyricsPagination: "歌词与分页", lyricsToolbar: "歌词格式工具栏",
     autoPaginate: "自动分页", blankPaginate: "按空行分页", decreaseFont: "缩小字号",
@@ -137,6 +136,8 @@ const translations = {
     uploadBackground: "上传背景图", removeBackground: "移除背景", backgroundLocalOnly: "背景图只保存在本机，不会上传，也不会与其他人共享。",
     appearanceLabel: "日间 / 夜间模式", dayMode: "已切换到日间模式", nightMode: "已切换到夜间模式",
     toTraditional: "简→繁", toSimplified: "繁→简", convertedToTraditional: "歌词已转为繁体",
+    localDraft: "本地草稿 · 未同步云端", restoreCloud: "放弃本地修改，重新载入云端曲库",
+    confirmRestoreCloud: "这会丢弃本机上的修改，改用云端曲库。确定继续吗？", cloudRestored: "已重新载入云端曲库",
     convertedToSimplified: "歌词已转为简体", nothingConverted: "歌词无需转换",
     backgroundApplied: "已应用背景图", backgroundRemoved: "已移除背景图", backgroundInvalid: "请选择一张图片文件",
     backgroundTooLarge: "图片太大，请选择 12MB 以内的图片", backgroundNotStored: "背景图本次可用，但空间不足无法长期保存",
@@ -151,8 +152,7 @@ const translations = {
     saved: "已儲存於此裝置", saving: "正在儲存…", exportSlides: "匯出投影片",
     worshipLibrary: "敬拜歌曲庫", myLibrary: "我的曲庫", worshipSongs: "敬拜詩歌",
     newSong: "新增詩歌", searchSong: "搜尋詩歌", searchPlaceholder: "搜尋歌名或主題…",
-    songCount: "{count} 首詩歌", sortRecent: "按最近編輯", tip: "小提示",
-    blankTip: "空白行會成為投影片的自然分頁點。", lyricsEditor: "歌詞編輯器",
+    songCount: "{count} 首詩歌", sortRecent: "按最近編輯", lyricsEditor: "歌詞編輯器",
     songName: "詩歌名稱", authorSource: "作者 / 來源",
     lyricsPagination: "歌詞與分頁", lyricsToolbar: "歌詞格式工具列",
     autoPaginate: "自動分頁", blankPaginate: "按空白行分頁", decreaseFont: "縮小字級",
@@ -203,6 +203,8 @@ const translations = {
     uploadBackground: "上傳背景圖", removeBackground: "移除背景", backgroundLocalOnly: "背景圖只儲存在本機，不會上傳，也不會與其他人共享。",
     appearanceLabel: "日間 / 夜間模式", dayMode: "已切換到日間模式", nightMode: "已切換到夜間模式",
     toTraditional: "簡→繁", toSimplified: "繁→簡", convertedToTraditional: "歌詞已轉為繁體",
+    localDraft: "本機草稿 · 未同步雲端", restoreCloud: "放棄本機修改，重新載入雲端曲庫",
+    confirmRestoreCloud: "這會捨棄本機上的修改，改用雲端曲庫。確定繼續嗎？", cloudRestored: "已重新載入雲端曲庫",
     convertedToSimplified: "歌詞已轉為簡體", nothingConverted: "歌詞無需轉換",
     backgroundApplied: "已套用背景圖", backgroundRemoved: "已移除背景圖", backgroundInvalid: "請選擇一張圖片檔案",
     backgroundTooLarge: "圖片太大，請選擇 12MB 以內的圖片", backgroundNotStored: "背景圖本次可用，但空間不足無法長期儲存",
@@ -217,8 +219,7 @@ const translations = {
     saved: "Saved on this device", saving: "Saving…", exportSlides: "Export slides",
     worshipLibrary: "Worship song library", myLibrary: "My library", worshipSongs: "Worship songs",
     newSong: "Add song", searchSong: "Search songs", searchPlaceholder: "Search title or theme…",
-    songCount: "{count} songs", sortRecent: "Recently edited", tip: "Tip",
-    blankTip: "Blank lines create natural slide breaks.", lyricsEditor: "Lyrics editor",
+    songCount: "{count} songs", sortRecent: "Recently edited", lyricsEditor: "Lyrics editor",
     songName: "Song title", authorSource: "Author / source",
     lyricsPagination: "Lyrics & pagination", lyricsToolbar: "Lyrics formatting toolbar",
     autoPaginate: "Auto paginate", blankPaginate: "Split on blank lines", decreaseFont: "Decrease font size",
@@ -269,6 +270,8 @@ const translations = {
     uploadBackground: "Upload background", removeBackground: "Remove background", backgroundLocalOnly: "Backgrounds stay on this device. They are never uploaded or shared with anyone else.",
     appearanceLabel: "Day / night mode", dayMode: "Switched to day mode", nightMode: "Switched to night mode",
     toTraditional: "简→繁", toSimplified: "繁→简", convertedToTraditional: "Lyrics converted to Traditional",
+    localDraft: "Local draft · not synced", restoreCloud: "Discard local changes and reload the cloud library",
+    confirmRestoreCloud: "This discards the changes on this device and reloads the cloud library. Continue?", cloudRestored: "Cloud library reloaded",
     convertedToSimplified: "Lyrics converted to Simplified", nothingConverted: "Nothing to convert",
     backgroundApplied: "Background applied", backgroundRemoved: "Background removed", backgroundInvalid: "Please choose an image file",
     backgroundTooLarge: "Image too large; please choose one under 12MB", backgroundNotStored: "Background works for now, but there was no room to store it",
@@ -372,6 +375,7 @@ const backend = {
   userEmail: "",
   tokenClient: null,
   dirtySongIds: new Set(),
+  localDraft: false,
   saving: false,
   syncTimer: null
 };
@@ -386,7 +390,7 @@ const elements = {
   fontSelect: $("#fontSelect"), captionSelect: $("#captionSelect"),
   ratioSelect: $("#ratioSelect"), aspectChip: $(".aspect-chip"),
   backgroundInput: $("#backgroundInput"), clearBackgroundButton: $("#clearBackgroundButton"),
-  appearanceButton: $("#appearanceButton"),
+  appearanceButton: $("#appearanceButton"), restoreCloudButton: $("#restoreCloudButton"),
   breadcrumb: $("#breadcrumbTitle"), slideContent: $("#slideContent"),
   slideTitle: $("#slideSongTitle"), currentSlide: $("#currentSlide"),
   totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
@@ -416,14 +420,16 @@ function translateInterface() {
 function refreshSaveState() {
   const pending = backend.dirtySongIds.size;
   let key = "saved";
-  if (backend.role === "checking") key = "cloudChecking";
+  if (backend.configured && backend.role !== "editor" && backend.localDraft) key = "localDraft";
+  else if (backend.role === "checking") key = "cloudChecking";
   else if (backend.role === "editor") key = backend.saving ? "cloudSaving" : pending ? "cloudUnsaved" : "cloudEditorReady";
   else if (backend.configured) key = "cloudReadOnly";
   elements.saveState.innerHTML = `<i></i> ${t(key)}`;
 
   const readOnly = backend.configured && backend.role !== "editor";
   elements.deleteSongButton.hidden = readOnly;
-  elements.newSongButton.hidden = readOnly;
+  elements.newSongButton.hidden = false;
+  elements.restoreCloudButton.hidden = !(readOnly && backend.localDraft);
   const button = elements.saveSongButton;
   button.hidden = !backend.configured || backend.role !== "editor";
   button.disabled = !pending || backend.saving;
@@ -460,12 +466,8 @@ function renderAccessState() {
     elements.adminEmailLink.textContent = publicConfig.adminEmail;
     elements.adminEmailLink.href = `mailto:${publicConfig.adminEmail}`;
   }
-  const canEdit = role === "local" || role === "editor";
-  elements.title.readOnly = !canEdit;
-  elements.author.readOnly = !canEdit;
-  elements.lyrics.readOnly = !canEdit;
-  elements.newSongButton.disabled = !canEdit;
-  elements.editorPanel.classList.toggle("is-readonly", !canEdit);
+  // Everyone may edit their own copy; only pushing to the Sheet needs an invite.
+  elements.editorPanel.classList.remove("is-readonly");
   refreshSaveState();
 }
 
@@ -593,11 +595,6 @@ function renderPreview() {
 }
 
 function updateSong(field, value, shouldRender = true) {
-  if (backend.configured && backend.role !== "editor") {
-    showToast(t("editorRequired"));
-    renderEditor();
-    return;
-  }
   const song = activeSong();
   if (!song) return;
   song[field] = value;
@@ -950,7 +947,7 @@ function rowsToSongs(rows = []) {
 }
 
 async function loadRemoteSongs({ accessToken = backend.accessToken, silent = false } = {}) {
-  if (!backend.configured || backend.dirtySongIds.size) return false;
+  if (!backend.configured || backend.dirtySongIds.size || backend.localDraft) return false;
   try {
     const payload = await readSheetRange(publicConfig.songsRange || "Songs!A2:I", accessToken);
     const remoteSongs = rowsToSongs(payload.values);
@@ -1018,10 +1015,6 @@ async function saveSongRemote(songId) {
 async function deleteActiveSong() {
   const song = activeSong();
   if (!song) return;
-  if (backend.configured && backend.role !== "editor") {
-    showToast(t("editorRequired"));
-    return;
-  }
   const label = song.title || t("untitledSong");
   if (!window.confirm(t("confirmDelete").replace("{title}", label))) return;
 
@@ -1049,7 +1042,15 @@ async function deleteActiveSong() {
 
 // Edits stay local until the editor presses Save; this only records what is pending.
 function markSongDirty(songId = state.activeId) {
-  if (!backend.configured || backend.role !== "editor" || !songId) return;
+  if (!backend.configured) return;
+  if (backend.role !== "editor") {
+    // A guest's edits live on this device. Stop pulling the cloud library over
+    // them, or the next poll would silently discard their work.
+    backend.localDraft = true;
+    refreshSaveState();
+    return;
+  }
+  if (!songId) return;
   backend.dirtySongIds.add(songId);
   refreshSaveState();
 }
@@ -1186,10 +1187,6 @@ async function initializeBackend() {
 }
 
 function createSong({ title = t("untitledSong"), author = "", lyrics = t("firstLyricLine") } = {}) {
-  if (backend.configured && backend.role !== "editor") {
-    showToast(t("editorRequired"));
-    return null;
-  }
   const id = `song-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
   state.songs.unshift({ id, title, author, tags: t("newTag"), lyrics, updatedAt: Date.now() });
   state.activeId = id;
@@ -1306,6 +1303,16 @@ function applyAppearance() {
   document.documentElement.dataset.appearance = state.appearance;
   elements.appearanceButton.setAttribute("aria-pressed", String(state.appearance === "light"));
 }
+
+elements.restoreCloudButton.addEventListener("click", async () => {
+  if (!window.confirm(t("confirmRestoreCloud"))) return;
+  backend.localDraft = false;
+  const loaded = await loadRemoteSongs({ silent: true });
+  if (!loaded) { backend.localDraft = true; showToast(t("cloudLoadFailed")); }
+  else showToast(t("cloudRestored"));
+  refreshSaveState();
+  renderAccessState();
+});
 
 elements.appearanceButton.addEventListener("click", () => {
   state.appearance = state.appearance === "light" ? "dark" : "light";
