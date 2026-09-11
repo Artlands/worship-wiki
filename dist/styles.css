@@ -392,10 +392,18 @@ kbd {
 
 .title-fields {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
+  grid-template-columns: 1.15fr 1fr 1fr;
   gap: 18px;
   margin: 28px 0;
 }
+
+.title-fields input:disabled { background: transparent; color: #b4b0a6; cursor: default; }
+
+.editor-panel.is-empty .section-rule,
+.editor-panel.is-empty .editor-toolbar,
+.editor-panel.is-empty .editor-actions { opacity: 0.4; pointer-events: none; }
+
+.editor-panel.is-empty .lyrics-field textarea::placeholder { color: #b4b0a6; }
 
 .title-fields label > span {
   display: block;

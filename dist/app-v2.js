@@ -97,6 +97,7 @@ const translations = {
     deleteSong: "删除诗歌", confirmDelete: "确定删除《{title}》吗？此操作无法撤销。", songDeleted: "诗歌已删除",
     saveToCloud: "保存到云端", savingToCloud: "正在保存…", allSynced: "已保存", nothingToSave: "没有需要保存的修改",
     cloudUnsaved: "云端曲库 · 有未保存的修改",
+    tagsLabel: "标签", tagsPlaceholder: "例如：赞美 · 创造", noSongSelected: "曲库为空", emptyEditorHint: "点击左上角 ＋ 新建一首诗歌",
     requestUnavailable: "管理员邮箱尚未配置", accessRequestSubject: "申请加入敬拜百科编辑团队",
     accessRequestBody: "你好，我希望使用以下 Google 账号加入敬拜百科编辑团队：\n\n{email}\n\n请在 Google Sheet 中邀请此账号为编辑者。谢谢！"
   },
@@ -153,6 +154,7 @@ const translations = {
     deleteSong: "刪除詩歌", confirmDelete: "確定刪除《{title}》嗎？此操作無法復原。", songDeleted: "詩歌已刪除",
     saveToCloud: "儲存到雲端", savingToCloud: "正在儲存…", allSynced: "已儲存", nothingToSave: "沒有需要儲存的修改",
     cloudUnsaved: "雲端曲庫 · 有未儲存的修改",
+    tagsLabel: "標籤", tagsPlaceholder: "例如：讚美 · 創造", noSongSelected: "曲庫為空", emptyEditorHint: "點擊左上角 ＋ 新增一首詩歌",
     requestUnavailable: "管理員電子郵件尚未設定", accessRequestSubject: "申請加入敬拜百科編輯團隊",
     accessRequestBody: "你好，我希望使用以下 Google 帳號加入敬拜百科編輯團隊：\n\n{email}\n\n請在 Google Sheet 中邀請此帳號為編輯者。謝謝！"
   },
@@ -209,6 +211,7 @@ const translations = {
     deleteSong: "Delete song", confirmDelete: "Delete \"{title}\"? This cannot be undone.", songDeleted: "Song deleted",
     saveToCloud: "Save to cloud", savingToCloud: "Saving…", allSynced: "Saved", nothingToSave: "No unsaved changes",
     cloudUnsaved: "Cloud library · Unsaved changes",
+    tagsLabel: "Tags", tagsPlaceholder: "e.g. Praise · Creation", noSongSelected: "Library is empty", emptyEditorHint: "Click ＋ at the top left to add a song",
     requestUnavailable: "The administrator email has not been configured", accessRequestSubject: "Request to join the Worship Wiki editing team",
     accessRequestBody: "Hello, I would like to join the Worship Wiki editing team using this Google account:\n\n{email}\n\nPlease invite this account as an editor in Google Sheets. Thank you!"
   }
@@ -268,6 +271,7 @@ const $$ = (selector) => [...document.querySelectorAll(selector)];
 const elements = {
   songList: $("#songList"), search: $("#songSearch"), count: $("#songCount"),
   title: $("#songTitle"), author: $("#songAuthor"), lyrics: $("#lyricsInput"),
+  tags: $("#songTags"), tagSuggestions: $("#tagSuggestions"),
   breadcrumb: $("#breadcrumbTitle"), slideContent: $("#slideContent"),
   slideTitle: $("#slideSongTitle"), currentSlide: $("#currentSlide"),
   totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
@@ -389,6 +393,11 @@ function scheduleSave() {
   scheduleSave.timeout = window.setTimeout(saveNow, 450);
 }
 
+function refreshTagSuggestions() {
+  const tags = [...new Set(state.songs.map((song) => song.tags).filter(Boolean))].sort();
+  elements.tagSuggestions.innerHTML = tags.map((tag) => `<option value="${escapeHtml(tag)}"></option>`).join("");
+}
+
 function renderLibrary(filter = "") {
   const query = filter.trim().toLocaleLowerCase(state.locale);
   const filtered = state.songs.filter((song) =>
@@ -408,12 +417,23 @@ function renderLibrary(filter = "") {
 
 function renderEditor() {
   const song = activeSong();
+  // An empty library is a valid state: blank the editor rather than inventing a song.
+  elements.editorPanel.classList.toggle("is-empty", !song);
+  [elements.title, elements.author, elements.tags, elements.lyrics].forEach((field) => {
+    field.value = song ? song[field.dataset.field] || "" : "";
+    field.disabled = !song;
+  });
+  if (!song) {
+    elements.breadcrumb.textContent = t("noSongSelected");
+    state.slideIndex = 0;
+    renderControls();
+    renderPreview();
+    return;
+  }
   if (["midnight", "parchment", "dawn"].includes(song.theme)) state.theme = song.theme;
-  elements.title.value = song.title;
-  elements.author.value = song.author;
-  elements.lyrics.value = song.lyrics;
   elements.breadcrumb.textContent = song.title || t("untitledSong");
   state.slideIndex = 0;
+  refreshTagSuggestions();
   renderControls();
   renderPreview();
 }
@@ -425,7 +445,7 @@ function renderControls() {
 }
 
 function renderPreview() {
-  const song = activeSong();
+  const song = activeSong() || { lyrics: "", title: "" };
   const slides = paginate(song.lyrics);
   state.slideIndex = Math.min(state.slideIndex, slides.length - 1);
   const lines = slides[state.slideIndex] || [];
@@ -448,6 +468,7 @@ function updateSong(field, value, shouldRender = true) {
     return;
   }
   const song = activeSong();
+  if (!song) return;
   song[field] = value;
   song.updatedAt = Date.now();
   if (field === "title") elements.breadcrumb.textContent = value || t("untitledSong");
@@ -759,13 +780,9 @@ async function deleteActiveSong() {
   backend.dirtySongIds.delete(song.id);
 
   state.songs = state.songs.filter((item) => item.id !== song.id);
-  if (state.songs.length) {
-    state.activeId = state.songs[0].id;
-    renderLibrary(elements.search.value);
-    renderEditor();
-  } else {
-    createSong();
-  }
+  state.activeId = state.songs.length ? state.songs[0].id : "";
+  renderLibrary(elements.search.value);
+  renderEditor();
   saveNow();
   refreshSaveState();
   showToast(t("songDeleted"));
@@ -944,6 +961,7 @@ elements.search.addEventListener("input", (event) => renderLibrary(event.target.
 elements.title.addEventListener("input", (event) => updateSong("title", event.target.value));
 elements.author.addEventListener("input", (event) => updateSong("author", event.target.value));
 elements.lyrics.addEventListener("input", (event) => updateSong("lyrics", event.target.value));
+elements.tags.addEventListener("input", (event) => updateSong("tags", event.target.value, false));
 
 $("#prevSlide").addEventListener("click", () => {
   const count = paginate(activeSong().lyrics).length;
