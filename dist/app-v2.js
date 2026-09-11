@@ -487,8 +487,6 @@ function renderAccessState() {
     elements.adminEmailLink.textContent = publicConfig.adminEmail;
     elements.adminEmailLink.href = `mailto:${publicConfig.adminEmail}`;
   }
-  // Everyone may edit their own copy; only pushing to the Sheet needs an invite.
-  elements.editorPanel.classList.remove("is-readonly");
   refreshSaveState();
 }
 
@@ -570,6 +568,7 @@ function renderEditor() {
     field.value = song ? song[key] || "" : "";
     field.disabled = !song;
   });
+  elements.lyrics.placeholder = song ? "" : t("emptyEditorHint");
   if (!song) {
     elements.breadcrumb.textContent = t("noSongSelected");
     state.slideIndex = 0;

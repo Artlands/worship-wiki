@@ -5,12 +5,16 @@ A pure front-end lyric slide builder for church worship teams. Build and search 
 ## Features
 
 - Automatic pagination every four lines, or manual page breaks with blank lines
-- Three 16:9 projection themes with adjustable font size
-- Autosaves locally in the browser; lyrics are never uploaded
+- Six projection themes, 16:9 or 4:3, serif or sans, font size 20 to 120
+- Credit line (title and author) placeable in any corner, centred, or hidden
+- Per-device background images that never leave the browser
+- One-click Simplified/Traditional conversion of lyrics, direction detected automatically
+- Day and night interface modes, following the system setting on first visit
+- Autosaves locally in the browser; anyone can edit their own copy offline
 - Three interface languages: Simplified Chinese, Traditional Chinese, and English
-- Google account sign-in with invite-only editing
+- Google account sign-in; invited editors sync the shared library
 - Cross-device song library sync via Google Sheets
-- Exports `.pptx`, a Keynote-importable `.pptx`, and `.pdf`
+- Exports fully editable `.pptx`, a Keynote-importable `.pptx`, and `.pdf`
 - Responsive on desktop and mobile
 - Includes a GitHub Pages deployment workflow
 
@@ -47,7 +51,7 @@ A repository **variable** is the right home for this, not a secret. Every value 
 
 ## Connecting Google Sheets
 
-Without Google configuration the site stays in its original local-draft mode. Once the steps below are complete, ordinary visitors become read-only and only invited Google accounts can add or modify songs.
+Without Google configuration the site stays in its original local-draft mode. Once the steps below are complete, the shared library comes from the Sheet and only invited Google accounts can write back to it. Everyone else can still edit their own copy locally; those changes simply stay on their device.
 
 ### 1. Create the spreadsheet
 
@@ -55,6 +59,9 @@ Create a Google Sheet with two worksheets:
 
 - `Songs`: import [`google-sheet-template/Songs.csv`](google-sheet-template/Songs.csv)
 - `_config`: import [`google-sheet-template/_config.csv`](google-sheet-template/_config.csv)
+
+To start with a library rather than an empty one, paste the rows from
+[`google-sheet-template/Songs-seed.csv`](google-sheet-template/Songs-seed.csv) beneath the `Songs` header. It holds ten classic hymns in Mandarin, all from public-domain originals.
 
 The column order in `Songs` must stay:
 
@@ -147,7 +154,7 @@ Then have them sign in.
 
 ## Editing permission flow
 
-1. Visitors can view, search, preview, and export lyrics, but the editor is read-only.
+1. Visitors can view, search, preview, export, and edit their own local copy. Their changes stay on that device and are never written to the Sheet.
 2. After a user signs in with Google, the site checks their real write access to the Sheet by attempting a write to `_config!A1`.
 3. Users without access can click "Request edit access" to send a pre-filled email to `adminEmail`.
 4. The admin adds that address in both places described in [Adding an editor](#adding-an-editor).
@@ -161,7 +168,7 @@ The read-only state on the page is only a UI hint; actual write permission is en
 | --- | --- |
 | Popup closes immediately, console names an origin | The site's origin is missing from **Authorized JavaScript origins**, or registered as `http://` while the site now serves `https://` |
 | `Error 403: access_denied` | The account is not in **Test users** |
-| Signs in, but stays read-only | The account is not an **Editor** on the Sheet |
+| Signs in, but changes never reach the Sheet | The account is not an **Editor** on the Sheet, so edits stay local |
 | Signed-out visitors see an empty library | Sheet general access is not **Anyone with the link → Viewer**, or the API key's referrer restriction excludes the site |
 | Live site behaves as local-draft | `WORSHIP_WIKI_CONFIG_JS` is unset, so the deploy shipped no `config.js` |
 

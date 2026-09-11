@@ -384,7 +384,7 @@ kbd {
   font-size: 12px;
 }
 
-.text-button { padding: 0; border: 0; background: none; color: var(--blue); cursor: pointer; }
+.text-button { min-height: 26px; padding: 4px 2px; border: 0; background: none; color: var(--gold); cursor: pointer; }
 
 .song-list { display: grid; gap: 8px; }
 .empty-library { padding: 28px 10px; color: var(--muted); font-size: 13px; text-align: center; }
@@ -859,12 +859,6 @@ dialog::backdrop {
 .admin-contact { margin: 16px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
 .admin-contact a { color: var(--blue); }
 
-.editor-panel.is-readonly input,
-.editor-panel.is-readonly textarea {
-  color: var(--muted);
-  background: var(--night-3);
-  cursor: not-allowed;
-}
 
 .icon-button:disabled {
   opacity: .42;
