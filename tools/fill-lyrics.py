@@ -5,9 +5,14 @@ Run this yourself, against sources your church is licensed to use. It never
 invents lyrics: a row is only filled when its link returns text, and every
 row is left untouched if anything goes wrong.
 
-    python3 tools/fill-lyrics.py google-sheet-template/FICCC-songs.csv
+    python3 tools/fill-lyrics.py <file> --discover       # find missing links first
+    python3 tools/fill-lyrics.py <file>                  # then fetch the lyrics
     python3 tools/fill-lyrics.py <file> --only 和散那     # one song
     python3 tools/fill-lyrics.py <file> --dry-run        # report, write nothing
+
+--discover looks each title up in a hymn index you point it at and records the
+page URL in column J. Point it at a site your church is licensed to use; it is
+deliberately not hardcoded to any one source.
 """
 import argparse, csv, html, re, sys, time, urllib.request
 
@@ -53,16 +58,62 @@ def extract(page):
     return out
 
 
+def discover(index_url, titles, timeout=25):
+    """Map {title: page URL} by matching titles against a hymn index page."""
+    page = fetch(index_url, timeout)
+    base = re.match(r"(https?://[^/]+)", index_url).group(1)
+    links = re.findall(r'<a[^>]+href="([^"]+)"[^>]*>(.*?)</a>', page, re.S | re.I)
+    found = {}
+    for href, label in links:
+        label = html.unescape(re.sub(r"<[^>]+>", "", label)).strip()
+        if not label:
+            continue
+        for title in titles:
+            if title in found:
+                continue
+            # match on the Chinese half; English subtitles vary between sources
+            zh = re.sub(r"[^一-鿿]", "", title)
+            if len(zh) >= 3 and zh in re.sub(r"[^一-鿿]", "", label):
+                found[title] = href if href.startswith("http") else base + "/" + href.lstrip("/")
+    return found
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("csv_path")
     ap.add_argument("--only", default="", help="substring of the title to limit to")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--delay", type=float, default=1.0, help="seconds between requests")
+    ap.add_argument("--discover", metavar="INDEX_URL", nargs="?", const="", default=None,
+                    help="find missing links by matching titles against a hymn index page")
     args = ap.parse_args()
 
     rows = list(csv.reader(open(args.csv_path, encoding="utf-8")))
     header, body = rows[0], rows[1:]
+
+    if args.discover is not None:
+        if not args.discover:
+            print("give --discover the URL of a hymn index page, e.g.\n"
+                  "  python3 tools/fill-lyrics.py <file> --discover https://example.org/hymns/index.html",
+                  file=sys.stderr)
+            return
+        missing = [r[1] for r in body if len(r) > LINK and not r[LINK].strip() and not r[LYRICS].strip()]
+        print(f"looking up {len(missing)} titles with no link…")
+        found = discover(args.discover, missing)
+        for row in body:
+            row += [""] * (LINK + 1 - len(row))
+            if row[1] in found and not row[LINK].strip():
+                row[LINK] = found[row[1]]
+        print(f"matched {len(found)} of {len(missing)}")
+        if args.dry_run:
+            for t, u in list(found.items())[:10]:
+                print(f"  {t} -> {u}")
+            print("dry run: nothing written")
+            return
+        with open(args.csv_path, "w", encoding="utf-8", newline="") as fh:
+            csv.writer(fh, lineterminator="\n").writerows([header] + body)
+        print(f"wrote {args.csv_path}; now run again without --discover to fetch the lyrics")
+        return
 
     filled = skipped = failed = 0
     for row in body:
