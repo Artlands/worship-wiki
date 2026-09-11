@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#071013" />
     <title>敬拜百科 · Worship Wiki</title>
-    <link rel="icon" href="./icon.svg?v=11" type="image/svg+xml" />
+    <link rel="icon" href="./icon.svg?v=12" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=11" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
   </head>
   <body>
     <div class="app-shell">
@@ -152,8 +152,10 @@
               <span class="sr-only" data-i18n="captionLabel">署名位置</span>
               <select id="captionSelect" aria-label="署名位置" data-i18n-aria="captionLabel">
                 <option value="bottom-left" data-i18n="capBottomLeft">署名左下</option>
+                <option value="bottom-center" data-i18n="capBottomCenter">署名底部居中</option>
                 <option value="bottom-right" data-i18n="capBottomRight">署名右下</option>
                 <option value="top-left" data-i18n="capTopLeft">署名左上</option>
+                <option value="top-center" data-i18n="capTopCenter">署名顶部居中</option>
                 <option value="top-right" data-i18n="capTopRight">署名右上</option>
                 <option value="none" data-i18n="capNone">不显示署名</option>
               </select>
@@ -329,6 +331,6 @@
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-    <script src="./app-v2.js?v=11"></script>
+    <script src="./app-v2.js?v=12"></script>
   </body>
 </html>

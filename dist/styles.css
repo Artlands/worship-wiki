@@ -491,16 +491,19 @@ kbd {
 
 .title-fields input {
   width: 100%;
+  height: var(--control-h);
   padding: 0 0 8px;
   border: 0;
   border-bottom: 1px solid var(--line);
   outline: 0;
   color: var(--ink);
   background: transparent;
+  font-size: 16px;
+  line-height: 1.4;
 }
 
-#songTitle { font: 700 23px/1.4 var(--serif); }
-#songAuthor { padding-top: 9px; font-size: 14px; }
+/* Title keeps the serif voice, but not a different box size. */
+#songTitle { font-family: var(--serif); font-weight: 700; }
 .title-fields input:focus { border-color: var(--blue); }
 
 .section-rule { display: flex; align-items: center; gap: 14px; margin: 12px 0; }
@@ -636,6 +639,8 @@ kbd {
 .cap-bottom-right .slide-song-title { right: 5%; left: auto; top: auto; bottom: 6%; text-align: right; }
 .cap-top-left .slide-song-title { left: 5%; right: auto; top: 6%; bottom: auto; text-align: left; }
 .cap-top-right .slide-song-title { right: 5%; left: auto; top: 6%; bottom: auto; text-align: right; }
+.cap-bottom-center .slide-song-title { left: 0; right: 0; top: auto; bottom: 6%; text-align: center; }
+.cap-top-center .slide-song-title { left: 0; right: 0; top: 6%; bottom: auto; text-align: center; }
 .cap-none .slide-song-title { display: none; }
 
 .slide-frame.has-background { background-size: cover; background-position: center; }

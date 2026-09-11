@@ -103,6 +103,7 @@ const translations = {
     tagsLabel: "标签", tagsPlaceholder: "例如：赞美 · 创造", noSongSelected: "曲库为空", emptyEditorHint: "点击左上角 ＋ 新建一首诗歌",
     fontLabel: "字体", fontSerif: "宋体", fontSans: "黑体", ratioLabel: "画面比例", captionLabel: "署名位置",
     capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不显示署名",
+    capBottomCenter: "署名底部居中", capTopCenter: "署名顶部居中",
     uploadBackground: "上传背景图", removeBackground: "移除背景", backgroundLocalOnly: "背景图只保存在本机，不会同步到 Google Sheet。",
     appearanceLabel: "日间 / 夜间模式", dayMode: "已切换到日间模式", nightMode: "已切换到夜间模式",
     backgroundApplied: "已应用背景图", backgroundRemoved: "已移除背景图", backgroundInvalid: "请选择一张图片文件",
@@ -166,6 +167,7 @@ const translations = {
     tagsLabel: "標籤", tagsPlaceholder: "例如：讚美 · 創造", noSongSelected: "曲庫為空", emptyEditorHint: "點擊左上角 ＋ 新增一首詩歌",
     fontLabel: "字體", fontSerif: "宋體", fontSans: "黑體", ratioLabel: "畫面比例", captionLabel: "署名位置",
     capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不顯示署名",
+    capBottomCenter: "署名底部置中", capTopCenter: "署名頂部置中",
     uploadBackground: "上傳背景圖", removeBackground: "移除背景", backgroundLocalOnly: "背景圖只儲存在本機，不會同步到 Google Sheet。",
     appearanceLabel: "日間 / 夜間模式", dayMode: "已切換到日間模式", nightMode: "已切換到夜間模式",
     backgroundApplied: "已套用背景圖", backgroundRemoved: "已移除背景圖", backgroundInvalid: "請選擇一張圖片檔案",
@@ -229,6 +231,7 @@ const translations = {
     tagsLabel: "Tags", tagsPlaceholder: "e.g. Praise · Creation", noSongSelected: "Library is empty", emptyEditorHint: "Click ＋ at the top left to add a song",
     fontLabel: "Typeface", fontSerif: "Serif", fontSans: "Sans", ratioLabel: "Slide ratio", captionLabel: "Credit position",
     capBottomLeft: "Credit bottom left", capBottomRight: "Credit bottom right", capTopLeft: "Credit top left", capTopRight: "Credit top right", capNone: "No credit",
+    capBottomCenter: "Credit bottom center", capTopCenter: "Credit top center",
     uploadBackground: "Upload background", removeBackground: "Remove background", backgroundLocalOnly: "Backgrounds stay on this device and are never synced to Google Sheets.",
     appearanceLabel: "Day / night mode", dayMode: "Switched to day mode", nightMode: "Switched to night mode",
     backgroundApplied: "Background applied", backgroundRemoved: "Background removed", backgroundInvalid: "Please choose an image file",
@@ -261,7 +264,8 @@ const storedSongs = storedState?.songs || starterSongs;
 const storedActiveId = storedState?.activeId;
 
 const SLIDE_FONTS = { serif: "var(--serif)", sans: "var(--sans)" };
-const CAPTION_SPOTS = ["bottom-left", "bottom-right", "top-left", "top-right", "none"];
+const CAPTION_SPOTS = ["bottom-left", "bottom-center", "bottom-right",
+  "top-left", "top-center", "top-right", "none"];
 // px sizes feed the export canvas; inches feed the PPTX deck layout.
 const RATIOS = {
   "16:9": { w: 1600, h: 900, inW: 13.333, inH: 7.5, layout: "LAYOUT_WIDE" },
@@ -649,11 +653,13 @@ function renderSlideCanvas(lines, song) {
   lines.forEach((line, index) => context.fillText(line, width / 2, startY + index * lineHeight));
   context.shadowColor = "transparent";
   if (state.caption !== "none") {
-    const right = state.caption.endsWith("right");
+    const align = state.caption.endsWith("right") ? "right"
+      : state.caption.endsWith("center") ? "center" : "left";
     context.font = `500 22px ${state.font === "sans" ? canvasSans : canvasSerif}`;
-    context.textAlign = right ? "right" : "left";
+    context.textAlign = align;
     context.fillStyle = state.theme === "parchment" ? "rgba(38,48,74,.58)" : "rgba(255,255,255,.55)";
-    context.fillText(slideCaption(song), right ? width - 80 : 80,
+    const capX = align === "right" ? width - 80 : align === "center" ? width / 2 : 80;
+    context.fillText(slideCaption(song), capX,
       state.caption.startsWith("top") ? height * 0.078 : height * 0.931);
   }
   return canvas;
