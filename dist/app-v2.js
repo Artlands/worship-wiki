@@ -282,7 +282,8 @@ const elements = {
   accessStatusText: $("#accessStatusText"), googleSignInButton: $("#googleSignInButton"),
   requestAccessButton: $("#requestAccessButton"), leaveEditModeButton: $("#leaveEditModeButton"),
   adminContact: $("#adminContact"), adminEmailLink: $("#adminEmailLink"),
-  editorPanel: $(".editor-panel"), newSongButton: $("#newSongButton"),
+  editorPanel: $(".editor-panel"), libraryPanel: $("#libraryPanel"), newSongButton: $("#newSongButton"),
+  deleteSongButton: $("[data-action='delete-song']"),
   saveSongButton: $("#saveSongButton")
 };
 
@@ -305,6 +306,9 @@ function refreshSaveState() {
   else if (backend.configured) key = "cloudReadOnly";
   elements.saveState.innerHTML = `<i></i> ${t(key)}`;
 
+  const readOnly = backend.configured && backend.role !== "editor";
+  elements.deleteSongButton.hidden = readOnly;
+  elements.newSongButton.hidden = readOnly;
   const button = elements.saveSongButton;
   button.hidden = !backend.configured || backend.role !== "editor";
   button.disabled = !pending || backend.saving;
@@ -830,6 +834,7 @@ async function saveDirtySongs() {
 function setAccessRole(role) {
   backend.role = role;
   renderAccessState();
+  refreshSaveState();
 }
 
 function waitForGoogleIdentity() {
@@ -1022,7 +1027,18 @@ elements.languageSelect.addEventListener("change", (event) => {
   scheduleSave();
   showToast(t("languageChanged"));
 });
-$("[data-action='focus-library']").addEventListener("click", () => elements.search.focus());
+function activateNav(button, panel, field) {
+  $$(".nav-link").forEach((link) => link.classList.toggle("active", link === button));
+  // Panels sit side by side on wide screens and stack on narrow ones, so scroll
+  // first and let focus do the visible work when everything is already in view.
+  panel.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+  if (!field.disabled) field.focus({ preventScroll: true });
+}
+
+$("[data-action='focus-library']").addEventListener("click", (event) =>
+  activateNav(event.currentTarget, elements.libraryPanel, elements.search));
+$("[data-action='focus-studio']").addEventListener("click", (event) =>
+  activateNav(event.currentTarget, elements.editorPanel, elements.lyrics));
 $("[data-action='show-guide']").addEventListener("click", () => elements.guideDialog.showModal());
 $("[data-action='delete-song']").addEventListener("click", () => void deleteActiveSong());
 elements.saveSongButton.addEventListener("click", () => void saveDirtySongs());

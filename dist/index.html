@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#152a53" />
     <title>敬拜百科 · Worship Wiki</title>
-    <link rel="icon" href="./icon.svg?v=5" type="image/svg+xml" />
+    <link rel="icon" href="./icon.svg?v=6" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=5" />
+    <link rel="stylesheet" href="./styles.css?v=6" />
   </head>
   <body>
     <div class="app-shell">
@@ -30,12 +30,13 @@
         </a>
 
         <nav class="topnav" aria-label="主要导航" data-i18n-aria="mainNav">
-          <button class="nav-link active" type="button" data-i18n="studio">制作台</button>
+          <button class="nav-link active" type="button" data-action="focus-studio" data-i18n="studio">制作台</button>
           <button class="nav-link" type="button" data-action="focus-library" data-i18n="library">曲库</button>
           <button class="nav-link" type="button" data-action="show-guide" data-i18n="guide">使用说明</button>
         </nav>
 
         <div class="header-actions">
+          <span class="save-state" id="saveState"><i></i> 已在此设备保存</span>
           <button class="account-button" id="accountButton" type="button" data-role="local" aria-haspopup="dialog">
             <i class="account-dot" aria-hidden="true"></i>
             <span id="accountLabel">本地模式</span>
@@ -49,7 +50,6 @@
               <option value="en">EN</option>
             </select>
           </label>
-          <span class="save-state" id="saveState"><i></i> 已在此设备保存</span>
           <button class="button button-primary" id="exportButton" type="button" data-i18n="exportSlides">
             导出幻灯片
           </button>
@@ -286,6 +286,6 @@
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-    <script src="./app-v2.js?v=5"></script>
+    <script src="./app-v2.js?v=6"></script>
   </body>
 </html>

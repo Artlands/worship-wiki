@@ -26,6 +26,10 @@ html[lang="en"] {
 
 * { box-sizing: border-box; }
 
+/* Author display rules outrank the UA sheet's [hidden] rule, which silently
+   left .danger-button visible to guests. Make hidden mean hidden. */
+[hidden] { display: none !important; }
+
 html, body { min-height: 100%; }
 
 body {
@@ -188,7 +192,7 @@ button { color: inherit; }
   box-shadow: 0 0 0 3px rgba(23, 74, 134, .12);
 }
 
-.save-state { color: #707887; font-size: 13px; }
+.save-state { color: #707887; font-size: 13px; margin-right: 2px; white-space: nowrap; }
 .save-state i {
   display: inline-block;
   width: 7px;
@@ -750,7 +754,7 @@ dialog::backdrop {
 
 @media (max-width: 480px) {
   .brand strong { font-size: 15px; }
-  .brand-mark { width: 34px; height: 38px; }
+  .brand-mark { width: 32px; height: 32px; }
   .song-list { grid-template-columns: 1fr; }
   .editor-toolbar { overflow-x: auto; }
   .tool-button { white-space: nowrap; }
