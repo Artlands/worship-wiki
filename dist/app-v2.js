@@ -619,7 +619,31 @@ function sanitizeFileName(value) {
   return String(value || t("defaultFileName")).replace(/[\\/:*?"<>|]/g, "-").trim() || t("defaultFileName");
 }
 
-function renderSlideCanvas(lines, song) {
+// Shrink-to-fit used by both the raster export and the PowerPoint text boxes,
+// so an editable deck sizes its words the same way the preview did.
+function fitFontPx(context, lines, width, fontStack) {
+  let fontPx = Math.min(state.fontSize * 1.78, 98);
+  const maxTextWidth = width * 0.82;
+  do {
+    context.font = `700 ${fontPx}px ${fontStack}`;
+    if (Math.max(...lines.map((line) => context.measureText(line).width), 0) <= maxTextWidth) break;
+    fontPx -= 2;
+  } while (fontPx > 46);
+  return fontPx;
+}
+
+// PowerPoint needs one concrete face, not a CSS stack.
+const DECK_FONTS = {
+  "zh-CN": { serif: "SimSun", sans: "Microsoft YaHei" },
+  "zh-TW": { serif: "PMingLiU", sans: "Microsoft JhengHei" },
+  en: { serif: "Georgia", sans: "Arial" }
+};
+
+function deckFont() {
+  return (DECK_FONTS[state.locale] || DECK_FONTS["zh-CN"])[state.font === "sans" ? "sans" : "serif"];
+}
+
+function renderSlideCanvas(lines, song, { withText = true } = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = RATIOS[state.ratio].w;
   canvas.height = RATIOS[state.ratio].h;
@@ -677,13 +701,10 @@ function renderSlideCanvas(lines, song) {
     context.fillRect(0, 0, width, height);
   }
 
-  let fontPx = Math.min(state.fontSize * 1.78, 98);
-  const maxTextWidth = width * 0.82;
-  do {
-    context.font = `700 ${fontPx}px ${state.font === "sans" ? canvasSans : canvasSerif}`;
-    if (Math.max(...lines.map((line) => context.measureText(line).width), 0) <= maxTextWidth) break;
-    fontPx -= 2;
-  } while (fontPx > 46);
+  if (!withText) return canvas;
+
+  const fontPx = fitFontPx(context, lines, width, state.font === "sans" ? canvasSans : canvasSerif);
+  context.font = `700 ${fontPx}px ${state.font === "sans" ? canvasSans : canvasSerif}`;
 
   const lineHeight = fontPx * 1.62;
   const groupHeight = Math.max(0, (lines.length - 1) * lineHeight);
@@ -766,20 +787,59 @@ function slideCaption(song) {
 async function exportPptx(fileName, keynoteCompatible = false) {
   if (!window.PptxGenJS) throw new Error(t("pptLoadError"));
   const song = activeSong();
+  if (!song) throw new Error(t("exportFailed"));
   const pages = paginate(song.lyrics);
+  const theme = THEMES[state.theme] || THEMES.midnight;
+  const { w: pxW, h: pxH, inW, inH, layout } = RATIOS[state.ratio];
+  const ptPerPx = (inW * 72) / pxW;
+
   const deck = new window.PptxGenJS();
-  deck.layout = RATIOS[state.ratio].layout;
+  deck.layout = layout;
   deck.author = "敬拜百科 Worship Wiki";
   deck.company = "Worship Wiki";
   deck.subject = t("exportSubject");
   deck.title = song.title || t("defaultFileName");
   deck.lang = state.locale;
+
+  // The artwork ships as the slide background; every word stays a real text box
+  // so the deck can be edited in PowerPoint or Keynote. It lives on a master so
+  // the image is stored once instead of once per slide, and as JPEG because a
+  // full-bleed gradient as PNG runs to megabytes.
+  const artwork = renderSlideCanvas([], song, { withText: false }).toDataURL("image/jpeg", 0.9);
+  const masterName = "WORSHIP_WIKI";
+  deck.defineSlideMaster({ title: masterName, background: { data: artwork } });
+  const measure = document.createElement("canvas").getContext("2d");
+  const fontFace = deckFont();
+  const bodyColor = theme.text.replace("#", "");
+  const dark = theme.text.toLowerCase() === "#ffffff";
+
   pages.forEach((lines) => {
-    const slide = deck.addSlide();
-    slide.background = { color: state.theme === "parchment" ? "F2EAD8" : "10274E" };
-    slide.addImage({ data: renderSlideCanvas(lines, song).toDataURL("image/png"), x: 0, y: 0,
-      w: RATIOS[state.ratio].inW, h: RATIOS[state.ratio].inH });
+    const slide = deck.addSlide({ masterName });
+
+    const fontPx = fitFontPx(measure, lines, pxW, `"${fontFace}", sans-serif`);
+    slide.addText(lines.join("\n"), {
+      x: 0, y: 0, w: inW, h: inH,
+      align: "center", valign: "middle",
+      fontFace, fontSize: Math.round(fontPx * ptPerPx), bold: true, color: bodyColor,
+      lineSpacingMultiple: 1.62,
+      shadow: dark ? { type: "outer", color: "000000", opacity: 0.28, blur: 8, offset: 2, angle: 90 } : undefined
+    });
+
+    if (state.caption !== "none") {
+      const align = state.caption.endsWith("right") ? "right"
+        : state.caption.endsWith("center") ? "center" : "left";
+      const margin = 80 * (inW / pxW);
+      const capH = 0.42;
+      slide.addText(slideCaption(song), {
+        x: margin, w: inW - margin * 2,
+        y: state.caption.startsWith("top") ? margin * 0.6 : inH - capH - margin * 0.6,
+        h: capH,
+        align, valign: "middle",
+        fontFace, fontSize: Math.round(22 * ptPerPx), color: bodyColor, transparency: 45
+      });
+    }
   });
+
   await deck.writeFile({ fileName: `${fileName}${keynoteCompatible ? "-Keynote" : ""}.pptx`, compression: true });
 }
 
