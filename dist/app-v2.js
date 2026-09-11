@@ -55,7 +55,7 @@ const HANZI = {
 };
 let hanziMaps = null;
 
-function convertHanzi(text, dir) {
+function hanziMap(dir) {
   if (!hanziMaps) {
     hanziMaps = {};
     for (const key of ["s2t", "t2s"]) {
@@ -65,10 +65,31 @@ function convertHanzi(text, dir) {
       hanziMaps[key] = map;
     }
   }
-  const map = hanziMaps[dir];
+  return hanziMaps[dir];
+}
+
+function convertHanzi(text, dir) {
+  const map = hanziMap(dir);
   let out = "";
   for (const ch of text) out += map.get(ch) || ch;
   return out;
+}
+
+// Which way to convert: a character that only has a traditional counterpart
+// reads as simplified, and vice versa. Characters shared by both scripts, and
+// the many that never differ, cast no vote.
+function detectHanziDirection(text) {
+  const s2t = hanziMap("s2t");
+  const t2s = hanziMap("t2s");
+  let simplified = 0;
+  let traditional = 0;
+  for (const ch of text) {
+    const looksSimplified = s2t.has(ch);
+    const looksTraditional = t2s.has(ch);
+    if (looksSimplified && !looksTraditional) simplified++;
+    else if (looksTraditional && !looksSimplified) traditional++;
+  }
+  return traditional > simplified ? "t2s" : "s2t";
 }
 
 const STORAGE_KEY = "worship-wiki-v2";
@@ -134,8 +155,8 @@ const translations = {
     capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不显示署名",
     capBottomCenter: "署名底部居中", capTopCenter: "署名顶部居中",
     uploadBackground: "上传背景图", removeBackground: "移除背景", backgroundLocalOnly: "背景图只保存在本机，不会上传，也不会与其他人共享。",
-    appearanceLabel: "日间 / 夜间模式", dayMode: "已切换到日间模式", nightMode: "已切换到夜间模式",
-    toTraditional: "简→繁", toSimplified: "繁→简", convertedToTraditional: "歌词已转为繁体",
+    appearanceLabel: "日间 / 夜间模式", dayMode: "已切换到日间模式", nightMode: "已切换到夜间模式", convertedToTraditional: "歌词已转为繁体",
+    toggleScript: "简⇄繁",
     localDraft: "本地草稿 · 未同步云端", restoreCloud: "放弃本地修改，重新载入云端曲库",
     confirmRestoreCloud: "这会丢弃本机上的修改，改用云端曲库。确定继续吗？", cloudRestored: "已重新载入云端曲库",
     convertedToSimplified: "歌词已转为简体", nothingConverted: "歌词无需转换",
@@ -201,8 +222,8 @@ const translations = {
     capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不顯示署名",
     capBottomCenter: "署名底部置中", capTopCenter: "署名頂部置中",
     uploadBackground: "上傳背景圖", removeBackground: "移除背景", backgroundLocalOnly: "背景圖只儲存在本機，不會上傳，也不會與其他人共享。",
-    appearanceLabel: "日間 / 夜間模式", dayMode: "已切換到日間模式", nightMode: "已切換到夜間模式",
-    toTraditional: "簡→繁", toSimplified: "繁→簡", convertedToTraditional: "歌詞已轉為繁體",
+    appearanceLabel: "日間 / 夜間模式", dayMode: "已切換到日間模式", nightMode: "已切換到夜間模式", convertedToTraditional: "歌詞已轉為繁體",
+    toggleScript: "簡⇄繁",
     localDraft: "本機草稿 · 未同步雲端", restoreCloud: "放棄本機修改，重新載入雲端曲庫",
     confirmRestoreCloud: "這會捨棄本機上的修改，改用雲端曲庫。確定繼續嗎？", cloudRestored: "已重新載入雲端曲庫",
     convertedToSimplified: "歌詞已轉為簡體", nothingConverted: "歌詞無需轉換",
@@ -268,8 +289,8 @@ const translations = {
     capBottomLeft: "Credit bottom left", capBottomRight: "Credit bottom right", capTopLeft: "Credit top left", capTopRight: "Credit top right", capNone: "No credit",
     capBottomCenter: "Credit bottom center", capTopCenter: "Credit top center",
     uploadBackground: "Upload background", removeBackground: "Remove background", backgroundLocalOnly: "Backgrounds stay on this device. They are never uploaded or shared with anyone else.",
-    appearanceLabel: "Day / night mode", dayMode: "Switched to day mode", nightMode: "Switched to night mode",
-    toTraditional: "简→繁", toSimplified: "繁→简", convertedToTraditional: "Lyrics converted to Traditional",
+    appearanceLabel: "Day / night mode", dayMode: "Switched to day mode", nightMode: "Switched to night mode", convertedToTraditional: "Lyrics converted to Traditional",
+    toggleScript: "简⇄繁",
     localDraft: "Local draft · not synced", restoreCloud: "Discard local changes and reload the cloud library",
     confirmRestoreCloud: "This discards the changes on this device and reloads the cloud library. Continue?", cloudRestored: "Cloud library reloaded",
     convertedToSimplified: "Lyrics converted to Simplified", nothingConverted: "Nothing to convert",
@@ -1234,9 +1255,10 @@ $$('[data-theme]').forEach((button) => button.addEventListener("click", () => {
   renderPreview();
   saveNow();
 }));
-function convertLyrics(dir) {
+function toggleLyricScript() {
   const song = activeSong();
-  if (!song) return;
+  if (!song || !song.lyrics.trim()) { showToast(t("nothingConverted")); return; }
+  const dir = detectHanziDirection(song.lyrics);
   const converted = convertHanzi(song.lyrics, dir);
   if (converted === song.lyrics) { showToast(t("nothingConverted")); return; }
   updateSong("lyrics", converted);
@@ -1244,8 +1266,7 @@ function convertLyrics(dir) {
   showToast(t(dir === "s2t" ? "convertedToTraditional" : "convertedToSimplified"));
 }
 
-$("[data-action='to-traditional']").addEventListener("click", () => convertLyrics("s2t"));
-$("[data-action='to-simplified']").addEventListener("click", () => convertLyrics("t2s"));
+$("[data-action='toggle-script']").addEventListener("click", toggleLyricScript);
 
 $("[data-action='decrease-font']").addEventListener("click", () => {
   state.fontSize = Math.max(32, state.fontSize - 2);
