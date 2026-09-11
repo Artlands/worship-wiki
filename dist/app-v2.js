@@ -42,6 +42,9 @@ const starterSongs = [
 ];
 
 const STORAGE_KEY = "worship-wiki-v2";
+// Backgrounds live on this device only and are deliberately never written to
+// the Sheet. Their own key keeps an oversized image from taking songs down.
+const BACKGROUND_KEY = "worship-wiki-background-v1";
 
 const translations = {
   "zh-CN": {
@@ -98,6 +101,11 @@ const translations = {
     saveToCloud: "保存到云端", savingToCloud: "正在保存…", allSynced: "已保存", nothingToSave: "没有需要保存的修改",
     cloudUnsaved: "云端曲库 · 有未保存的修改",
     tagsLabel: "标签", tagsPlaceholder: "例如：赞美 · 创造", noSongSelected: "曲库为空", emptyEditorHint: "点击左上角 ＋ 新建一首诗歌",
+    fontLabel: "字体", fontSerif: "宋体", fontSans: "黑体", ratioLabel: "画面比例", captionLabel: "署名位置",
+    capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不显示署名",
+    uploadBackground: "上传背景图", removeBackground: "移除背景", backgroundLocalOnly: "背景图只保存在本机，不会同步到 Google Sheet。",
+    backgroundApplied: "已应用背景图", backgroundRemoved: "已移除背景图", backgroundInvalid: "请选择一张图片文件",
+    backgroundTooLarge: "图片太大，请选择 12MB 以内的图片", backgroundNotStored: "背景图本次可用，但空间不足无法长期保存",
     requestUnavailable: "管理员邮箱尚未配置", accessRequestSubject: "申请加入敬拜百科编辑团队",
     accessRequestBody: "你好，我希望使用以下 Google 账号加入敬拜百科编辑团队：\n\n{email}\n\n请在 Google Sheet 中邀请此账号为编辑者。谢谢！"
   },
@@ -155,6 +163,11 @@ const translations = {
     saveToCloud: "儲存到雲端", savingToCloud: "正在儲存…", allSynced: "已儲存", nothingToSave: "沒有需要儲存的修改",
     cloudUnsaved: "雲端曲庫 · 有未儲存的修改",
     tagsLabel: "標籤", tagsPlaceholder: "例如：讚美 · 創造", noSongSelected: "曲庫為空", emptyEditorHint: "點擊左上角 ＋ 新增一首詩歌",
+    fontLabel: "字體", fontSerif: "宋體", fontSans: "黑體", ratioLabel: "畫面比例", captionLabel: "署名位置",
+    capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不顯示署名",
+    uploadBackground: "上傳背景圖", removeBackground: "移除背景", backgroundLocalOnly: "背景圖只儲存在本機，不會同步到 Google Sheet。",
+    backgroundApplied: "已套用背景圖", backgroundRemoved: "已移除背景圖", backgroundInvalid: "請選擇一張圖片檔案",
+    backgroundTooLarge: "圖片太大，請選擇 12MB 以內的圖片", backgroundNotStored: "背景圖本次可用，但空間不足無法長期儲存",
     requestUnavailable: "管理員電子郵件尚未設定", accessRequestSubject: "申請加入敬拜百科編輯團隊",
     accessRequestBody: "你好，我希望使用以下 Google 帳號加入敬拜百科編輯團隊：\n\n{email}\n\n請在 Google Sheet 中邀請此帳號為編輯者。謝謝！"
   },
@@ -212,6 +225,11 @@ const translations = {
     saveToCloud: "Save to cloud", savingToCloud: "Saving…", allSynced: "Saved", nothingToSave: "No unsaved changes",
     cloudUnsaved: "Cloud library · Unsaved changes",
     tagsLabel: "Tags", tagsPlaceholder: "e.g. Praise · Creation", noSongSelected: "Library is empty", emptyEditorHint: "Click ＋ at the top left to add a song",
+    fontLabel: "Typeface", fontSerif: "Serif", fontSans: "Sans", ratioLabel: "Slide ratio", captionLabel: "Credit position",
+    capBottomLeft: "Credit bottom left", capBottomRight: "Credit bottom right", capTopLeft: "Credit top left", capTopRight: "Credit top right", capNone: "No credit",
+    uploadBackground: "Upload background", removeBackground: "Remove background", backgroundLocalOnly: "Backgrounds stay on this device and are never synced to Google Sheets.",
+    backgroundApplied: "Background applied", backgroundRemoved: "Background removed", backgroundInvalid: "Please choose an image file",
+    backgroundTooLarge: "Image too large; please choose one under 12MB", backgroundNotStored: "Background works for now, but there was no room to store it",
     requestUnavailable: "The administrator email has not been configured", accessRequestSubject: "Request to join the Worship Wiki editing team",
     accessRequestBody: "Hello, I would like to join the Worship Wiki editing team using this Google account:\n\n{email}\n\nPlease invite this account as an editor in Google Sheets. Thank you!"
   }
@@ -239,6 +257,14 @@ const storedState = loadStoredState();
 const storedSongs = storedState?.songs || starterSongs;
 const storedActiveId = storedState?.activeId;
 
+const SLIDE_FONTS = { serif: "var(--serif)", sans: "var(--sans)" };
+const CAPTION_SPOTS = ["bottom-left", "bottom-right", "top-left", "top-right", "none"];
+// px sizes feed the export canvas; inches feed the PPTX deck layout.
+const RATIOS = {
+  "16:9": { w: 1600, h: 900, inW: 13.333, inH: 7.5, layout: "LAYOUT_WIDE" },
+  "4:3": { w: 1600, h: 1200, inW: 10, inH: 7.5, layout: "LAYOUT_4x3" }
+};
+
 const state = {
   songs: storedSongs,
   activeId: storedSongs.some((song) => song.id === storedActiveId) ? storedActiveId : storedSongs[0].id,
@@ -246,8 +272,24 @@ const state = {
   pagination: storedState?.pagination === "blank" ? "blank" : "auto",
   fontSize: Number.isFinite(storedState?.fontSize) ? storedState.fontSize : 44,
   theme: ["midnight", "parchment", "dawn"].includes(storedState?.theme) ? storedState.theme : "midnight",
-  locale: ["zh-CN", "zh-TW", "en"].includes(storedState?.locale) ? storedState.locale : "zh-CN"
+  locale: ["zh-CN", "zh-TW", "en"].includes(storedState?.locale) ? storedState.locale : "zh-CN",
+  font: storedState?.font === "sans" ? "sans" : "serif",
+  caption: CAPTION_SPOTS.includes(storedState?.caption) ? storedState.caption : "bottom-left",
+  ratio: RATIOS[storedState?.ratio] ? storedState.ratio : "16:9",
+  background: (() => { try { return localStorage.getItem(BACKGROUND_KEY) || ""; } catch (_e) { return ""; } })()
 };
+
+let backgroundImage = null;
+
+function loadBackgroundImage() {
+  if (!state.background) { backgroundImage = null; return Promise.resolve(null); }
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => { backgroundImage = image; resolve(image); };
+    image.onerror = () => { backgroundImage = null; resolve(null); };
+    image.src = state.background;
+  });
+}
 
 const publicConfig = window.WORSHIP_WIKI_CONFIG || {};
 const requiredConfigKeys = ["googleClientId", "googleApiKey", "spreadsheetId", "adminEmail"];
@@ -272,6 +314,9 @@ const elements = {
   songList: $("#songList"), search: $("#songSearch"), count: $("#songCount"),
   title: $("#songTitle"), author: $("#songAuthor"), lyrics: $("#lyricsInput"),
   tags: $("#songTags"), tagSuggestions: $("#tagSuggestions"),
+  fontSelect: $("#fontSelect"), captionSelect: $("#captionSelect"),
+  ratioSelect: $("#ratioSelect"), aspectChip: $(".aspect-chip"),
+  backgroundInput: $("#backgroundInput"), clearBackgroundButton: $("#clearBackgroundButton"),
   breadcrumb: $("#breadcrumbTitle"), slideContent: $("#slideContent"),
   slideTitle: $("#slideSongTitle"), currentSlide: $("#currentSlide"),
   totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
@@ -383,7 +428,8 @@ function saveNow() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       songs: state.songs, activeId: state.activeId, pagination: state.pagination,
-      fontSize: state.fontSize, theme: state.theme, locale: state.locale
+      fontSize: state.fontSize, theme: state.theme, locale: state.locale,
+      font: state.font, caption: state.caption, ratio: state.ratio
     }));
   } catch (error) {
     console.warn("Local save unavailable", error);
@@ -448,7 +494,15 @@ function renderEditor() {
 function renderControls() {
   $$('[data-mode]').forEach((item) => item.classList.toggle("active", item.dataset.mode === state.pagination));
   $$('[data-theme]').forEach((item) => item.classList.toggle("active", item.dataset.theme === state.theme));
-  elements.slideFrame.className = `slide-frame theme-${state.theme}`;
+  elements.slideFrame.className = `slide-frame theme-${state.theme} font-${state.font} cap-${state.caption}`;
+  elements.slideFrame.style.aspectRatio = state.ratio.replace(":", " / ");
+  elements.slideFrame.style.backgroundImage = state.background ? `url("${state.background}")` : "";
+  elements.slideFrame.classList.toggle("has-background", Boolean(state.background));
+  elements.clearBackgroundButton.hidden = !state.background;
+  elements.aspectChip.textContent = state.ratio;
+  elements.ratioSelect.value = state.ratio;
+  elements.fontSelect.value = state.font;
+  elements.captionSelect.value = state.caption;
 }
 
 function renderPreview() {
@@ -458,7 +512,7 @@ function renderPreview() {
   const lines = slides[state.slideIndex] || [];
   elements.slideContent.innerHTML = lines.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
   elements.slideContent.style.fontSize = `${Math.max(14, state.fontSize / 1.65)}px`;
-  elements.slideTitle.textContent = song.title || t("untitledSong");
+  elements.slideTitle.textContent = slideCaption(song);
   elements.currentSlide.textContent = state.slideIndex + 1;
   elements.totalSlides.textContent = slides.length;
   elements.fontSizeLabel.textContent = state.fontSize;
@@ -497,8 +551,8 @@ function sanitizeFileName(value) {
 
 function renderSlideCanvas(lines, song) {
   const canvas = document.createElement("canvas");
-  canvas.width = 1600;
-  canvas.height = 900;
+  canvas.width = RATIOS[state.ratio].w;
+  canvas.height = RATIOS[state.ratio].h;
   const context = canvas.getContext("2d");
   const width = canvas.width;
   const height = canvas.height;
@@ -556,10 +610,20 @@ function renderSlideCanvas(lines, song) {
   });
   context.restore();
 
+  if (backgroundImage) {
+    const scale = Math.max(width / backgroundImage.width, height / backgroundImage.height);
+    const drawW = backgroundImage.width * scale;
+    const drawH = backgroundImage.height * scale;
+    context.drawImage(backgroundImage, (width - drawW) / 2, (height - drawH) / 2, drawW, drawH);
+    // A photo behind text is unreadable without a scrim; match it to the theme's text colour.
+    context.fillStyle = state.theme === "parchment" ? "rgba(244,238,226,.58)" : "rgba(6,14,30,.5)";
+    context.fillRect(0, 0, width, height);
+  }
+
   let fontPx = Math.min(state.fontSize * 1.78, 98);
   const maxTextWidth = width * 0.82;
   do {
-    context.font = `700 ${fontPx}px ${canvasSerif}`;
+    context.font = `700 ${fontPx}px ${state.font === "sans" ? canvasSans : canvasSerif}`;
     if (Math.max(...lines.map((line) => context.measureText(line).width), 0) <= maxTextWidth) break;
     fontPx -= 2;
   } while (fontPx > 46);
@@ -577,11 +641,67 @@ function renderSlideCanvas(lines, song) {
   }
   lines.forEach((line, index) => context.fillText(line, width / 2, startY + index * lineHeight));
   context.shadowColor = "transparent";
-  context.font = `500 22px ${canvasSans}`;
-  context.textAlign = "left";
-  context.fillStyle = state.theme === "parchment" ? "rgba(38,48,74,.58)" : "rgba(255,255,255,.55)";
-  context.fillText(song.title || t("untitledSong"), 80, 838);
+  if (state.caption !== "none") {
+    const right = state.caption.endsWith("right");
+    context.font = `500 22px ${state.font === "sans" ? canvasSans : canvasSerif}`;
+    context.textAlign = right ? "right" : "left";
+    context.fillStyle = state.theme === "parchment" ? "rgba(38,48,74,.58)" : "rgba(255,255,255,.55)";
+    context.fillText(slideCaption(song), right ? width - 80 : 80,
+      state.caption.startsWith("top") ? height * 0.078 : height * 0.931);
+  }
   return canvas;
+}
+
+const MAX_BACKGROUND_BYTES = 12 * 1024 * 1024;
+
+// Downscale before storing: a phone photo as a data URL will blow the ~5MB
+// localStorage budget, and the slide canvas is only 1600px wide anyway.
+async function shrinkBackground(file) {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1920 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext("2d").drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close?.();
+  return canvas.toDataURL("image/jpeg", 0.82);
+}
+
+async function setBackground(file) {
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { showToast(t("backgroundInvalid")); return; }
+  if (file.size > MAX_BACKGROUND_BYTES) { showToast(t("backgroundTooLarge")); return; }
+  try {
+    state.background = await shrinkBackground(file);
+  } catch (_error) {
+    showToast(t("backgroundInvalid"));
+    return;
+  }
+  await loadBackgroundImage();
+  try {
+    localStorage.setItem(BACKGROUND_KEY, state.background);
+  } catch (_error) {
+    // Keep it for this session rather than losing the upload outright.
+    showToast(t("backgroundNotStored"));
+  }
+  renderControls();
+  renderPreview();
+  showToast(t("backgroundApplied"));
+}
+
+function clearBackground() {
+  state.background = "";
+  backgroundImage = null;
+  try { localStorage.removeItem(BACKGROUND_KEY); } catch (_error) { /* nothing to clean up */ }
+  renderControls();
+  renderPreview();
+  showToast(t("backgroundRemoved"));
+}
+
+function slideCaption(song) {
+  const title = song.title || t("untitledSong");
+  const author = String(song.author || "").trim();
+  return author ? `${title} · ${author}` : title;
 }
 
 async function exportPptx(fileName, keynoteCompatible = false) {
@@ -589,7 +709,7 @@ async function exportPptx(fileName, keynoteCompatible = false) {
   const song = activeSong();
   const pages = paginate(song.lyrics);
   const deck = new window.PptxGenJS();
-  deck.layout = "LAYOUT_WIDE";
+  deck.layout = RATIOS[state.ratio].layout;
   deck.author = "敬拜百科 Worship Wiki";
   deck.company = "Worship Wiki";
   deck.subject = t("exportSubject");
@@ -598,7 +718,8 @@ async function exportPptx(fileName, keynoteCompatible = false) {
   pages.forEach((lines) => {
     const slide = deck.addSlide();
     slide.background = { color: state.theme === "parchment" ? "F2EAD8" : "10274E" };
-    slide.addImage({ data: renderSlideCanvas(lines, song).toDataURL("image/png"), x: 0, y: 0, w: 13.333, h: 7.5 });
+    slide.addImage({ data: renderSlideCanvas(lines, song).toDataURL("image/png"), x: 0, y: 0,
+      w: RATIOS[state.ratio].inW, h: RATIOS[state.ratio].inH });
   });
   await deck.writeFile({ fileName: `${fileName}${keynoteCompatible ? "-Keynote" : ""}.pptx`, compression: true });
 }
@@ -608,11 +729,12 @@ async function exportPdf(fileName) {
   const { jsPDF } = window.jspdf;
   const song = activeSong();
   const pages = paginate(song.lyrics);
-  const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [1600, 900], hotfixes: ["px_scaling"] });
+  const { w: pw, h: ph } = RATIOS[state.ratio];
+  const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [pw, ph], hotfixes: ["px_scaling"] });
   pdf.setProperties({ title: song.title || t("defaultFileName"), author: "Worship Wiki", subject: t("exportSubject") });
   pages.forEach((lines, index) => {
-    if (index > 0) pdf.addPage([1600, 900], "landscape");
-    pdf.addImage(renderSlideCanvas(lines, song).toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, 1600, 900, undefined, "FAST");
+    if (index > 0) pdf.addPage([pw, ph], "landscape");
+    pdf.addImage(renderSlideCanvas(lines, song).toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, pw, ph, undefined, "FAST");
   });
   pdf.save(`${fileName}.pdf`);
 }
@@ -626,6 +748,7 @@ async function handleExport(format, button) {
   actionLabel.textContent = t("generating");
   try {
     if (document.fonts?.ready) await document.fonts.ready;
+    if (state.background && !backgroundImage) await loadBackgroundImage();
     if (format === "pdf") await exportPdf(fileName);
     else await exportPptx(fileName, format === "keynote");
     elements.exportDialog.close();
@@ -1031,9 +1154,47 @@ function activateNav(button, panel, field) {
   $$(".nav-link").forEach((link) => link.classList.toggle("active", link === button));
   // Panels sit side by side on wide screens and stack on narrow ones, so scroll
   // first and let focus do the visible work when everything is already in view.
-  panel.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
-  if (!field.disabled) field.focus({ preventScroll: true });
+  const bounds = panel.getBoundingClientRect();
+  const onScreen = bounds.top < window.innerHeight && bounds.bottom > 0
+    && bounds.left < window.innerWidth && bounds.right > 0;
+  if (!onScreen) panel.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
+  if (field.disabled) return;
+  field.focus({ preventScroll: true });
+  if (field.select) field.select();
+  // On wide screens every panel is already visible, so focus alone looks like
+  // nothing happened. Flash the target so the click is acknowledged.
+  const box = field.closest(".search-box");
+  if (!box) return;
+  box.classList.remove("is-pinged");
+  void box.offsetWidth;
+  box.classList.add("is-pinged");
 }
+
+elements.backgroundInput.addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  event.target.value = "";   // let the same file be re-picked after a clear
+  void setBackground(file);
+});
+
+elements.clearBackgroundButton.addEventListener("click", clearBackground);
+
+elements.ratioSelect.addEventListener("change", (event) => {
+  state.ratio = RATIOS[event.target.value] ? event.target.value : "16:9";
+  renderControls();
+  saveNow();
+});
+
+elements.fontSelect.addEventListener("change", (event) => {
+  state.font = event.target.value === "sans" ? "sans" : "serif";
+  renderControls();
+  saveNow();
+});
+
+elements.captionSelect.addEventListener("change", (event) => {
+  state.caption = CAPTION_SPOTS.includes(event.target.value) ? event.target.value : "bottom-left";
+  renderControls();
+  saveNow();
+});
 
 $("[data-action='focus-library']").addEventListener("click", (event) =>
   activateNav(event.currentTarget, elements.libraryPanel, elements.search));

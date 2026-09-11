@@ -9,14 +9,14 @@
     />
     <meta name="theme-color" content="#152a53" />
     <title>敬拜百科 · Worship Wiki</title>
-    <link rel="icon" href="./icon.svg?v=7" type="image/svg+xml" />
+    <link rel="icon" href="./icon.svg?v=9" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=7" />
+    <link rel="stylesheet" href="./styles.css?v=9" />
   </head>
   <body>
     <div class="app-shell">
@@ -131,6 +131,31 @@
             <button class="tool-icon" type="button" data-action="decrease-font" aria-label="缩小字号" data-i18n-aria="decreaseFont">A−</button>
             <span class="font-size" id="fontSizeLabel">44</span>
             <button class="tool-icon" type="button" data-action="increase-font" aria-label="放大字号" data-i18n-aria="increaseFont">A＋</button>
+            <span class="toolbar-divider"></span>
+            <label class="tool-select">
+              <span class="sr-only" data-i18n="fontLabel">字体</span>
+              <select id="fontSelect" aria-label="字体" data-i18n-aria="fontLabel">
+                <option value="serif" data-i18n="fontSerif">宋体</option>
+                <option value="sans" data-i18n="fontSans">黑体</option>
+              </select>
+            </label>
+            <label class="tool-select">
+              <span class="sr-only" data-i18n="captionLabel">署名位置</span>
+              <select id="captionSelect" aria-label="署名位置" data-i18n-aria="captionLabel">
+                <option value="bottom-left" data-i18n="capBottomLeft">署名左下</option>
+                <option value="bottom-right" data-i18n="capBottomRight">署名右下</option>
+                <option value="top-left" data-i18n="capTopLeft">署名左上</option>
+                <option value="top-right" data-i18n="capTopRight">署名右上</option>
+                <option value="none" data-i18n="capNone">不显示署名</option>
+              </select>
+            </label>
+            <label class="tool-select">
+              <span class="sr-only" data-i18n="ratioLabel">画面比例</span>
+              <select id="ratioSelect" aria-label="画面比例" data-i18n-aria="ratioLabel">
+                <option value="16:9">16:9</option>
+                <option value="4:3">4:3</option>
+              </select>
+            </label>
           </div>
 
           <label class="lyrics-field">
@@ -189,6 +214,15 @@
               <span data-i18n="themeDawn">晨光旷野</span>
             </button>
           </div>
+
+          <div class="background-row">
+            <label class="background-button">
+              <span data-i18n="uploadBackground">上传背景图</span>
+              <input id="backgroundInput" type="file" accept="image/*" hidden />
+            </label>
+            <button class="background-button ghost" id="clearBackgroundButton" type="button" hidden data-i18n="removeBackground">移除背景</button>
+          </div>
+          <p class="background-hint" data-i18n="backgroundLocalOnly">背景图只保存在本机，不会同步到 Google Sheet。</p>
 
           <div class="projection-note">
             <span aria-hidden="true">◉</span>
@@ -286,6 +320,6 @@
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-    <script src="./app-v2.js?v=7"></script>
+    <script src="./app-v2.js?v=9"></script>
   </body>
 </html>
