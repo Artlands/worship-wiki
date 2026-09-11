@@ -125,6 +125,8 @@ const translations = {
     checkPaginationDesc: "每四行自动分页；也可用空行指定页面。", chooseExport: "选择并导出",
     chooseExportDesc: "挑选画面主题，再生成 PPTX、Keynote 兼容文件或 PDF。",
     startCreating: "开始制作", emptyLibrary: "没有找到相关诗歌", untitledSong: "未命名诗歌",
+    titleSlideLabel: "标题页", titleSlideName: "标题页：歌名",
+    titleSlideNameAuthor: "标题页：歌名与作者", titleSlideNone: "不显示标题页",
     uncategorized: "未分类", pageShort: "{count}页", slidesCount: "{count} 张",
     lyricsStats: "{lines} 行 · {slides} 张幻灯片", emptyLyrics: "在左侧输入歌词",
     defaultFileName: "敬拜幻灯片", pptLoadError: "PowerPoint 组件尚未加载，请检查网络后重试。",
@@ -195,6 +197,8 @@ const translations = {
     checkPaginationDesc: "每四行自動分頁；也可用空白行指定頁面。", chooseExport: "選擇並匯出",
     chooseExportDesc: "挑選畫面主題，再產生 PPTX、Keynote 相容檔案或 PDF。",
     startCreating: "開始製作", emptyLibrary: "找不到相關詩歌", untitledSong: "未命名詩歌",
+    titleSlideLabel: "標題頁", titleSlideName: "標題頁：歌名",
+    titleSlideNameAuthor: "標題頁：歌名與作者", titleSlideNone: "不顯示標題頁",
     uncategorized: "未分類", pageShort: "{count}頁", slidesCount: "{count} 張",
     lyricsStats: "{lines} 行 · {slides} 張投影片", emptyLyrics: "在左側輸入歌詞",
     defaultFileName: "敬拜投影片", pptLoadError: "PowerPoint 元件尚未載入，請檢查網路後重試。",
@@ -265,6 +269,8 @@ const translations = {
     checkPaginationDesc: "Split every four lines automatically, or use blank lines.", chooseExport: "Choose and export",
     chooseExportDesc: "Pick a visual theme, then create a PPTX, Keynote-compatible file, or PDF.",
     startCreating: "Start creating", emptyLibrary: "No matching songs", untitledSong: "Untitled song",
+    titleSlideLabel: "Title slide", titleSlideName: "Title slide: name",
+    titleSlideNameAuthor: "Title slide: name & author", titleSlideNone: "No title slide",
     uncategorized: "Uncategorized", pageShort: "{count}p", slidesCount: "{count} slides",
     lyricsStats: "{lines} lines · {slides} slides", emptyLyrics: "Enter lyrics on the left",
     defaultFileName: "Worship Slides", pptLoadError: "The PowerPoint exporter has not loaded. Check your connection and try again.",
@@ -333,6 +339,7 @@ const storedSongs = storedState?.songs || starterSongs;
 const storedActiveId = storedState?.activeId;
 
 const SLIDE_FONTS = { serif: "var(--serif)", sans: "var(--sans)" };
+const TITLE_SLIDE_MODES = ["title", "with-author", "none"];
 const CAPTION_SPOTS = ["bottom-left", "bottom-center", "bottom-right",
   "top-left", "top-center", "top-right", "none"];
 // px sizes feed the export canvas; inches feed the PPTX deck layout.
@@ -375,6 +382,7 @@ const state = {
   locale: ["zh-CN", "zh-TW", "en"].includes(storedState?.locale) ? storedState.locale : "zh-CN",
   font: storedState?.font === "sans" ? "sans" : "serif",
   caption: CAPTION_SPOTS.includes(storedState?.caption) ? storedState.caption : "bottom-left",
+  titleSlide: TITLE_SLIDE_MODES.includes(storedState?.titleSlide) ? storedState.titleSlide : "title",
   ratio: RATIOS[storedState?.ratio] ? storedState.ratio : "16:9",
   appearance: ["dark", "light"].includes(storedState?.appearance) ? storedState.appearance
     : (window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark"),
@@ -418,6 +426,7 @@ const elements = {
   title: $("#songTitle"), author: $("#songAuthor"), lyrics: $("#lyricsInput"),
   tags: $("#songTags"), tagSuggestions: $("#tagSuggestions"),
   fontSelect: $("#fontSelect"), captionSelect: $("#captionSelect"),
+  titleSlideSelect: $("#titleSlideSelect"),
   ratioSelect: $("#ratioSelect"), aspectChip: $(".aspect-chip"),
   backgroundInput: $("#backgroundInput"), clearBackgroundButton: $("#clearBackgroundButton"),
   appearanceButton: $("#appearanceButton"), restoreCloudButton: $("#restoreCloudButton"),
@@ -524,12 +533,35 @@ function paginate(lyrics) {
   return pages;
 }
 
+// The opening slide. Returns null when there is nothing to introduce, so an
+// empty song previews as before rather than as a title card for nothing.
+function titlePage(song) {
+  if (state.titleSlide === "none") return null;
+  if (!String(song?.lyrics || "").trim()) return null;
+  const title = String(song?.title || "").trim() || t("untitledSong");
+  const author = String(song?.author || "").trim();
+  return state.titleSlide === "with-author" && author ? [title, author] : [title];
+}
+
+// Every slide count and every exporter reads the deck through here, so the
+// title page appears in the preview, the counts and the files alike.
+function slidePages(song) {
+  const opening = titlePage(song);
+  const pages = paginate(song?.lyrics);
+  return opening ? [opening, ...pages] : pages;
+}
+
+function hasTitlePage(song) {
+  return titlePage(song) !== null;
+}
+
 function saveNow() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       songs: state.songs, activeId: state.activeId, pagination: state.pagination,
       fontSize: state.fontSize, theme: state.theme, locale: state.locale,
       font: state.font, caption: state.caption, ratio: state.ratio,
+      titleSlide: state.titleSlide,
       appearance: state.appearance
     }));
   } catch (error) {
@@ -556,7 +588,7 @@ function renderLibrary(filter = "") {
   );
   elements.count.textContent = t("songCount", { count: filtered.length });
   elements.songList.innerHTML = filtered.length ? filtered.map((song, index) => {
-    const pages = paginate(song.lyrics).length;
+    const pages = slidePages(song).length;
     return `
       <button class="song-item ${song.id === state.activeId ? "active" : ""}" type="button" data-song-id="${escapeHtml(song.id)}">
         <span class="song-number">${String(index + 1).padStart(2, "0")}</span>
@@ -604,11 +636,12 @@ function renderControls() {
   elements.ratioSelect.value = state.ratio;
   elements.fontSelect.value = state.font;
   elements.captionSelect.value = state.caption;
+  elements.titleSlideSelect.value = state.titleSlide;
 }
 
 function renderPreview() {
   const song = activeSong() || { lyrics: "", title: "" };
-  const slides = paginate(song.lyrics);
+  const slides = slidePages(song);
   state.slideIndex = Math.min(state.slideIndex, slides.length - 1);
   const lines = slides[state.slideIndex] || [];
   elements.slideContent.innerHTML = lines.map((line) => `<div>${escapeHtml(line)}</div>`).join("");
@@ -669,7 +702,7 @@ function deckFont() {
   return (DECK_FONTS[state.locale] || DECK_FONTS["zh-CN"])[state.font === "sans" ? "sans" : "serif"];
 }
 
-function renderSlideCanvas(lines, song, { withText = true } = {}) {
+function renderSlideCanvas(lines, song, { withText = true, isTitle = false } = {}) {
   const canvas = document.createElement("canvas");
   canvas.width = RATIOS[state.ratio].w;
   canvas.height = RATIOS[state.ratio].h;
@@ -745,7 +778,7 @@ function renderSlideCanvas(lines, song, { withText = true } = {}) {
   }
   lines.forEach((line, index) => context.fillText(line, width / 2, startY + index * lineHeight));
   context.shadowColor = "transparent";
-  if (state.caption !== "none") {
+  if (state.caption !== "none" && !isTitle) {
     const align = state.caption.endsWith("right") ? "right"
       : state.caption.endsWith("center") ? "center" : "left";
     context.font = `500 22px ${state.font === "sans" ? canvasSans : canvasSerif}`;
@@ -814,7 +847,7 @@ async function exportPptx(fileName, keynoteCompatible = false) {
   if (!window.PptxGenJS) throw new Error(t("pptLoadError"));
   const song = activeSong();
   if (!song) throw new Error(t("exportFailed"));
-  const pages = paginate(song.lyrics);
+  const pages = slidePages(song);
   const theme = THEMES[state.theme] || THEMES.midnight;
   const { w: pxW, h: pxH, inW, inH, layout } = RATIOS[state.ratio];
   const ptPerPx = (inW * 72) / pxW;
@@ -839,8 +872,10 @@ async function exportPptx(fileName, keynoteCompatible = false) {
   const bodyColor = theme.text.replace("#", "");
   const dark = theme.text.toLowerCase() === "#ffffff";
 
-  pages.forEach((lines) => {
+  const opening = hasTitlePage(song);
+  pages.forEach((lines, index) => {
     const slide = deck.addSlide({ masterName });
+    const isTitle = opening && index === 0;
 
     const fontPx = fitFontPx(measure, lines, pxW, `"${fontFace}", sans-serif`);
     slide.addText(lines.join("\n"), {
@@ -851,7 +886,7 @@ async function exportPptx(fileName, keynoteCompatible = false) {
       shadow: dark ? { type: "outer", color: "000000", opacity: 0.28, blur: 8, offset: 2, angle: 90 } : undefined
     });
 
-    if (state.caption !== "none") {
+    if (state.caption !== "none" && !isTitle) {
       const align = state.caption.endsWith("right") ? "right"
         : state.caption.endsWith("center") ? "center" : "left";
       const margin = 80 * (inW / pxW);
@@ -873,13 +908,14 @@ async function exportPdf(fileName) {
   if (!window.jspdf?.jsPDF) throw new Error(t("pdfLoadError"));
   const { jsPDF } = window.jspdf;
   const song = activeSong();
-  const pages = paginate(song.lyrics);
+  const pages = slidePages(song);
   const { w: pw, h: ph } = RATIOS[state.ratio];
   const pdf = new jsPDF({ orientation: "landscape", unit: "px", format: [pw, ph], hotfixes: ["px_scaling"] });
   pdf.setProperties({ title: song.title || t("defaultFileName"), author: "Worship Wiki", subject: t("exportSubject") });
   pages.forEach((lines, index) => {
     if (index > 0) pdf.addPage([pw, ph], "landscape");
-    pdf.addImage(renderSlideCanvas(lines, song).toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, pw, ph, undefined, "FAST");
+    const isTitle = index === 0 && hasTitlePage(song);
+    pdf.addImage(renderSlideCanvas(lines, song, { isTitle }).toDataURL("image/jpeg", 0.94), "JPEG", 0, 0, pw, ph, undefined, "FAST");
   });
   pdf.save(`${fileName}.pdf`);
 }
@@ -1240,12 +1276,12 @@ elements.lyrics.addEventListener("input", (event) => updateSong("lyrics", event.
 elements.tags.addEventListener("input", (event) => updateSong("tags", event.target.value, false));
 
 $("#prevSlide").addEventListener("click", () => {
-  const count = paginate(activeSong().lyrics).length;
+  const count = slidePages(activeSong()).length;
   state.slideIndex = (state.slideIndex - 1 + count) % count;
   renderPreview();
 });
 $("#nextSlide").addEventListener("click", () => {
-  const count = paginate(activeSong().lyrics).length;
+  const count = slidePages(activeSong()).length;
   state.slideIndex = (state.slideIndex + 1) % count;
   renderPreview();
 });
@@ -1304,7 +1340,7 @@ $("#newSongButton").addEventListener("click", () => {
   if (song) elements.title.select();
 });
 $("#exportButton").addEventListener("click", () => {
-  elements.exportSlideCount.textContent = t("slidesCount", { count: paginate(activeSong().lyrics).length });
+  elements.exportSlideCount.textContent = t("slidesCount", { count: slidePages(activeSong()).length });
   elements.exportDialog.showModal();
 });
 $$('[data-export-format]').forEach((button) => button.addEventListener("click", () => handleExport(button.dataset.exportFormat, button)));
@@ -1388,6 +1424,15 @@ elements.captionSelect.addEventListener("change", (event) => {
   saveNow();
 });
 
+elements.titleSlideSelect.addEventListener("change", (event) => {
+  state.titleSlide = TITLE_SLIDE_MODES.includes(event.target.value) ? event.target.value : "title";
+  // the deck just grew or shrank at the front; keep the preview in range
+  state.slideIndex = 0;
+  renderControls();
+  renderPreview();
+  saveNow();
+});
+
 $("[data-action='focus-library']").addEventListener("click", (event) =>
   activateNav(event.currentTarget, elements.libraryPanel, elements.search));
 $("[data-action='focus-studio']").addEventListener("click", (event) =>
@@ -1436,7 +1481,7 @@ function registerWebMcpTools() {
     annotations: { readOnlyHint: true, untrustedContentHint: true },
     execute() {
       const song = activeSong();
-      return { title: song.title, author: song.author, theme: state.theme, pagination: state.pagination, slides: paginate(song.lyrics) };
+      return { title: song.title, author: song.author, theme: state.theme, pagination: state.pagination, slides: slidePages(song) };
     }
   });
 
@@ -1463,7 +1508,7 @@ function registerWebMcpTools() {
       renderEditor();
       saveNow();
       markSongDirty(activeSong().id);
-      return { updated: true, id: activeSong().id, title: activeSong().title, slideCount: paginate(activeSong().lyrics).length };
+      return { updated: true, id: activeSong().id, title: activeSong().title, slideCount: slidePages(activeSong()).length };
     }
   });
 
@@ -1485,7 +1530,7 @@ function registerWebMcpTools() {
       }
       const song = createSong(input);
       saveNow();
-      return { created: true, id: song.id, title: song.title, slideCount: paginate(song.lyrics).length };
+      return { created: true, id: song.id, title: song.title, slideCount: slidePages(song).length };
     }
   });
 }
