@@ -736,22 +736,7 @@ kbd {
 .theme-swatch.snow { background: linear-gradient(135deg, #ffffff, #dfe5ec); }
 .theme-swatch.snow i { background: rgba(27,36,51,.7); box-shadow: 0 7px 0 rgba(27,36,51,.45); }
 
-.projection-note {
-  margin-top: 24px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 11px;
-  color: var(--muted);
-  background: var(--raise);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  font-size: 12px;
-}
 
-.projection-note > span { color: var(--gold); }
-.projection-note p { margin: 0; line-height: 1.6; }
-.projection-note strong { color: var(--ink); }
 
 .toast {
   position: fixed;
