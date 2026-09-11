@@ -23,6 +23,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Write runtime config
+        env:
+          CONFIG_JS: ${{ vars.WORSHIP_WIKI_CONFIG_JS }}
+        run: |
+          if [ -n "$CONFIG_JS" ]; then
+            printf '%s\n' "$CONFIG_JS" > dist/config.js
+            echo "config.js written from repository variable"
+          else
+            echo "WORSHIP_WIKI_CONFIG_JS not set; site deploys in local-draft mode"
+          fi
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site
