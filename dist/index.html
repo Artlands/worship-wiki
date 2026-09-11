@@ -16,16 +16,19 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css?v=24" />
+    <link rel="stylesheet" href="./styles.css?v=25" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="#" aria-label="敬拜百科首页" data-i18n-aria="brandHome">
-          <img class="brand-mark" src="./icon.svg" alt="" width="36" height="36" />
-          <span>
-            <strong data-i18n="brandName">敬拜百科</strong>
-            <small>WORSHIP WIKI</small>
+        <a class="brand" href="https://slashai.app/" aria-label="slashai.app 首页">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><path d="M16 2.5c1.15 7.35 3.15 9.95 8.9 13.5-5.75 3.55-7.75 6.15-8.9 13.5-1.15-7.35-3.15-9.95-8.9-13.5 5.75-3.55 7.75-6.15 8.9-13.5Z" /></svg>
+          </span>
+          <span class="brand-copy">
+            <span class="brand-root">slashai<span class="brand-dim">.app</span></span>
+            <span class="brand-sep"> / </span>
+            <strong class="brand-here" data-i18n="brandName">敬拜百科</strong>
           </span>
         </a>
 
@@ -50,17 +53,14 @@
               <path d="M8 1.4v1.5M8 13.1v1.5M1.4 8h1.5M13.1 8h1.5M3.3 3.3l1.1 1.1M11.6 11.6l1.1 1.1M12.7 3.3l-1.1 1.1M4.4 11.6l-1.1 1.1"/>
             </svg>
           </button>
-          <label class="language-switcher">
-            <span class="sr-only" data-i18n="languageLabel">界面语言</span>
-            <span aria-hidden="true">文</span>
-            <select id="languageSelect" aria-label="界面语言" data-i18n-aria="languageLabel">
-              <option value="zh-CN">简体</option>
-              <option value="zh-TW">繁體</option>
-              <option value="en">EN</option>
-            </select>
-          </label>
-          <button class="button button-primary" id="exportButton" type="button" data-i18n="exportSlides">
-            导出幻灯片
+          <div class="language-switcher" role="group" aria-label="界面语言" data-i18n-aria="languageLabel">
+            <button type="button" data-language="zh-CN" aria-pressed="true">简</button>
+            <button type="button" data-language="zh-TW" aria-pressed="false">繁</button>
+            <button type="button" data-language="en" aria-pressed="false">EN</button>
+          </div>
+          <button class="button button-primary" id="exportButton" type="button" aria-label="导出幻灯片" data-i18n-aria="exportSlides">
+            <span data-i18n="exportSlides">导出幻灯片</span>
+            <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M4 15h12"/></svg>
           </button>
         </div>
       </header>
@@ -354,6 +354,6 @@
     <script id="googleIdentityScript" src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <script src="https://unpkg.com/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
-    <script src="./app-v2.js?v=24"></script>
+    <script src="./app-v2.js?v=25"></script>
   </body>
 </html>
