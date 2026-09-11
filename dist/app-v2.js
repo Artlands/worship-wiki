@@ -156,7 +156,7 @@ const translations = {
     capBottomCenter: "署名底部居中", capTopCenter: "署名顶部居中",
     uploadBackground: "上传背景图", removeBackground: "移除背景", backgroundLocalOnly: "背景图只保存在本机，不会上传，也不会与其他人共享。",
     appearanceLabel: "日间 / 夜间模式", dayMode: "已切换到日间模式", nightMode: "已切换到夜间模式", convertedToTraditional: "歌词已转为繁体",
-    toggleScript: "简⇄繁",
+    toggleScript: "简⇄繁", fontSizeLabel: "字号",
     localDraft: "本地草稿 · 未同步云端", restoreCloud: "放弃本地修改，重新载入云端曲库",
     confirmRestoreCloud: "这会丢弃本机上的修改，改用云端曲库。确定继续吗？", cloudRestored: "已重新载入云端曲库",
     convertedToSimplified: "歌词已转为简体", nothingConverted: "歌词无需转换",
@@ -223,7 +223,7 @@ const translations = {
     capBottomCenter: "署名底部置中", capTopCenter: "署名頂部置中",
     uploadBackground: "上傳背景圖", removeBackground: "移除背景", backgroundLocalOnly: "背景圖只儲存在本機，不會上傳，也不會與其他人共享。",
     appearanceLabel: "日間 / 夜間模式", dayMode: "已切換到日間模式", nightMode: "已切換到夜間模式", convertedToTraditional: "歌詞已轉為繁體",
-    toggleScript: "簡⇄繁",
+    toggleScript: "簡⇄繁", fontSizeLabel: "字級",
     localDraft: "本機草稿 · 未同步雲端", restoreCloud: "放棄本機修改，重新載入雲端曲庫",
     confirmRestoreCloud: "這會捨棄本機上的修改，改用雲端曲庫。確定繼續嗎？", cloudRestored: "已重新載入雲端曲庫",
     convertedToSimplified: "歌詞已轉為簡體", nothingConverted: "歌詞無需轉換",
@@ -290,7 +290,7 @@ const translations = {
     capBottomCenter: "Credit bottom center", capTopCenter: "Credit top center",
     uploadBackground: "Upload background", removeBackground: "Remove background", backgroundLocalOnly: "Backgrounds stay on this device. They are never uploaded or shared with anyone else.",
     appearanceLabel: "Day / night mode", dayMode: "Switched to day mode", nightMode: "Switched to night mode", convertedToTraditional: "Lyrics converted to Traditional",
-    toggleScript: "简⇄繁",
+    toggleScript: "简⇄繁", fontSizeLabel: "Font size",
     localDraft: "Local draft · not synced", restoreCloud: "Discard local changes and reload the cloud library",
     confirmRestoreCloud: "This discards the changes on this device and reloads the cloud library. Continue?", cloudRestored: "Cloud library reloaded",
     convertedToSimplified: "Lyrics converted to Simplified", nothingConverted: "Nothing to convert",
@@ -361,7 +361,7 @@ const state = {
   activeId: storedSongs.some((song) => song.id === storedActiveId) ? storedActiveId : storedSongs[0].id,
   slideIndex: 0,
   pagination: storedState?.pagination === "blank" ? "blank" : "auto",
-  fontSize: Number.isFinite(storedState?.fontSize) ? storedState.fontSize : 44,
+  fontSize: Number.isFinite(storedState?.fontSize) ? Math.min(120, Math.max(20, storedState.fontSize)) : 44,
   theme: THEME_NAMES.includes(storedState?.theme) ? storedState.theme : "midnight",
   locale: ["zh-CN", "zh-TW", "en"].includes(storedState?.locale) ? storedState.locale : "zh-CN",
   font: storedState?.font === "sans" ? "sans" : "serif",
@@ -415,7 +415,7 @@ const elements = {
   breadcrumb: $("#breadcrumbTitle"), slideContent: $("#slideContent"),
   slideTitle: $("#slideSongTitle"), currentSlide: $("#currentSlide"),
   totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
-  fontSizeLabel: $("#fontSizeLabel"), saveState: $("#saveState"), toast: $("#toast"),
+  fontSizeInput: $("#fontSizeInput"), saveState: $("#saveState"), toast: $("#toast"),
   exportDialog: $("#exportDialog"), exportSlideCount: $("#exportSlideCount"), guideDialog: $("#guideDialog"),
   languageSelect: $("#languageSelect"), accountButton: $("#accountButton"), accountLabel: $("#accountLabel"),
   accessDialog: $("#accessDialog"), accessStatus: $("#accessStatus"), accessStatusTitle: $("#accessStatusTitle"),
@@ -608,7 +608,7 @@ function renderPreview() {
   elements.slideTitle.textContent = slideCaption(song);
   elements.currentSlide.textContent = state.slideIndex + 1;
   elements.totalSlides.textContent = slides.length;
-  elements.fontSizeLabel.textContent = state.fontSize;
+  if (document.activeElement !== elements.fontSizeInput) elements.fontSizeInput.value = state.fontSize;
   elements.exportSlideCount.textContent = t("slidesCount", { count: slides.length });
   const lineCount = String(song.lyrics || "").split("\n").filter((line) => line.trim()).length;
   elements.stats.textContent = t("lyricsStats", { lines: lineCount, slides: slides.length });
@@ -1268,15 +1268,27 @@ function toggleLyricScript() {
 
 $("[data-action='toggle-script']").addEventListener("click", toggleLyricScript);
 
-$("[data-action='decrease-font']").addEventListener("click", () => {
-  state.fontSize = Math.max(32, state.fontSize - 2);
+const FONT_MIN = 20;
+const FONT_MAX = 120;
+
+function setFontSize(value) {
+  const size = Math.round(Number(value));
+  if (!Number.isFinite(size)) return;
+  state.fontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, size));
   renderPreview();
   scheduleSave();
+}
+
+$("[data-action='decrease-font']").addEventListener("click", () => setFontSize(state.fontSize - 2));
+$("[data-action='increase-font']").addEventListener("click", () => setFontSize(state.fontSize + 2));
+
+elements.fontSizeInput.addEventListener("change", (event) => {
+  setFontSize(event.target.value);
+  event.target.value = state.fontSize;   // show the clamped value back
 });
-$("[data-action='increase-font']").addEventListener("click", () => {
-  state.fontSize = Math.min(60, state.fontSize + 2);
-  renderPreview();
-  scheduleSave();
+
+elements.fontSizeInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") { event.preventDefault(); event.target.blur(); }
 });
 
 $("#newSongButton").addEventListener("click", () => {

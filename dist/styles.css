@@ -527,7 +527,22 @@ kbd {
 .tool-button.active { color: var(--blue); background: var(--night-3); box-shadow: 0 1px 5px rgba(0,0,0,.09); }
 .tool-icon:hover { color: var(--ink); background: var(--raise-2); }
 .toolbar-divider { height: 20px; width: 1px; margin: 0 5px; background: var(--line); }
-.font-size { width: 28px; text-align: center; color: var(--muted); font-size: 12px; }
+.font-size {
+  width: 46px;
+  height: 32px;
+  padding: 0 4px;
+  text-align: center;
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.font-size:hover { border-color: var(--line); }
+.font-size:focus { border-color: var(--gold); outline: 0; }
+.font-size::-webkit-inner-spin-button, .font-size::-webkit-outer-spin-button { opacity: 0; }
 
 .lyrics-field { display: block; }
 .lyrics-field textarea {
