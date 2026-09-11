@@ -104,6 +104,7 @@ const translations = {
     fontLabel: "字体", fontSerif: "宋体", fontSans: "黑体", ratioLabel: "画面比例", captionLabel: "署名位置",
     capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不显示署名",
     uploadBackground: "上传背景图", removeBackground: "移除背景", backgroundLocalOnly: "背景图只保存在本机，不会同步到 Google Sheet。",
+    appearanceLabel: "日间 / 夜间模式", dayMode: "已切换到日间模式", nightMode: "已切换到夜间模式",
     backgroundApplied: "已应用背景图", backgroundRemoved: "已移除背景图", backgroundInvalid: "请选择一张图片文件",
     backgroundTooLarge: "图片太大，请选择 12MB 以内的图片", backgroundNotStored: "背景图本次可用，但空间不足无法长期保存",
     requestUnavailable: "管理员邮箱尚未配置", accessRequestSubject: "申请加入敬拜百科编辑团队",
@@ -166,6 +167,7 @@ const translations = {
     fontLabel: "字體", fontSerif: "宋體", fontSans: "黑體", ratioLabel: "畫面比例", captionLabel: "署名位置",
     capBottomLeft: "署名左下", capBottomRight: "署名右下", capTopLeft: "署名左上", capTopRight: "署名右上", capNone: "不顯示署名",
     uploadBackground: "上傳背景圖", removeBackground: "移除背景", backgroundLocalOnly: "背景圖只儲存在本機，不會同步到 Google Sheet。",
+    appearanceLabel: "日間 / 夜間模式", dayMode: "已切換到日間模式", nightMode: "已切換到夜間模式",
     backgroundApplied: "已套用背景圖", backgroundRemoved: "已移除背景圖", backgroundInvalid: "請選擇一張圖片檔案",
     backgroundTooLarge: "圖片太大，請選擇 12MB 以內的圖片", backgroundNotStored: "背景圖本次可用，但空間不足無法長期儲存",
     requestUnavailable: "管理員電子郵件尚未設定", accessRequestSubject: "申請加入敬拜百科編輯團隊",
@@ -228,6 +230,7 @@ const translations = {
     fontLabel: "Typeface", fontSerif: "Serif", fontSans: "Sans", ratioLabel: "Slide ratio", captionLabel: "Credit position",
     capBottomLeft: "Credit bottom left", capBottomRight: "Credit bottom right", capTopLeft: "Credit top left", capTopRight: "Credit top right", capNone: "No credit",
     uploadBackground: "Upload background", removeBackground: "Remove background", backgroundLocalOnly: "Backgrounds stay on this device and are never synced to Google Sheets.",
+    appearanceLabel: "Day / night mode", dayMode: "Switched to day mode", nightMode: "Switched to night mode",
     backgroundApplied: "Background applied", backgroundRemoved: "Background removed", backgroundInvalid: "Please choose an image file",
     backgroundTooLarge: "Image too large; please choose one under 12MB", backgroundNotStored: "Background works for now, but there was no room to store it",
     requestUnavailable: "The administrator email has not been configured", accessRequestSubject: "Request to join the Worship Wiki editing team",
@@ -276,6 +279,8 @@ const state = {
   font: storedState?.font === "sans" ? "sans" : "serif",
   caption: CAPTION_SPOTS.includes(storedState?.caption) ? storedState.caption : "bottom-left",
   ratio: RATIOS[storedState?.ratio] ? storedState.ratio : "16:9",
+  appearance: ["dark", "light"].includes(storedState?.appearance) ? storedState.appearance
+    : (window.matchMedia?.("(prefers-color-scheme: light)").matches ? "light" : "dark"),
   background: (() => { try { return localStorage.getItem(BACKGROUND_KEY) || ""; } catch (_e) { return ""; } })()
 };
 
@@ -317,6 +322,7 @@ const elements = {
   fontSelect: $("#fontSelect"), captionSelect: $("#captionSelect"),
   ratioSelect: $("#ratioSelect"), aspectChip: $(".aspect-chip"),
   backgroundInput: $("#backgroundInput"), clearBackgroundButton: $("#clearBackgroundButton"),
+  appearanceButton: $("#appearanceButton"),
   breadcrumb: $("#breadcrumbTitle"), slideContent: $("#slideContent"),
   slideTitle: $("#slideSongTitle"), currentSlide: $("#currentSlide"),
   totalSlides: $("#totalSlides"), stats: $("#lyricsStats"), slideFrame: $("#slideFrame"),
@@ -429,7 +435,8 @@ function saveNow() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       songs: state.songs, activeId: state.activeId, pagination: state.pagination,
       fontSize: state.fontSize, theme: state.theme, locale: state.locale,
-      font: state.font, caption: state.caption, ratio: state.ratio
+      font: state.font, caption: state.caption, ratio: state.ratio,
+      appearance: state.appearance
     }));
   } catch (error) {
     console.warn("Local save unavailable", error);
@@ -1170,6 +1177,18 @@ function activateNav(button, panel, field) {
   box.classList.add("is-pinged");
 }
 
+function applyAppearance() {
+  document.documentElement.dataset.theme = state.appearance;
+  elements.appearanceButton.setAttribute("aria-pressed", String(state.appearance === "light"));
+}
+
+elements.appearanceButton.addEventListener("click", () => {
+  state.appearance = state.appearance === "light" ? "dark" : "light";
+  applyAppearance();
+  saveNow();
+  showToast(t(state.appearance === "light" ? "dayMode" : "nightMode"));
+});
+
 elements.backgroundInput.addEventListener("change", (event) => {
   const file = event.target.files?.[0];
   event.target.value = "";   // let the same file be re-picked after a clear
@@ -1298,6 +1317,7 @@ function registerWebMcpTools() {
   });
 }
 
+applyAppearance();
 translateInterface();
 renderLibrary();
 renderEditor();
