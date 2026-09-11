@@ -65,6 +65,7 @@ const translations = {
     previousSlide: "上一张", nextSlide: "下一张", visualStyle: "画面样式",
     chooseVisualStyle: "选择画面样式", themeMidnight: "深夜穹顶",
     themeParchment: "古典纸页", themeDawn: "晨光旷野", safeArea: "投影安全区",
+    themeForest: "松林晚祷", themeVesper: "暮色晚霞", themeSnow: "素白讲台",
     safeAreaText: "文字已保持在屏幕边缘以内。", readyToShare: "准备分享", close: "关闭",
     exportIntroBefore: "将以当前主题和分页生成 ", exportIntroAfter: " 16:9 幻灯片。",
     pptDescription: "通用演示文件 · .pptx", keynoteDescription: "导入兼容文件 · .pptx",
@@ -129,6 +130,7 @@ const translations = {
     previousSlide: "上一張", nextSlide: "下一張", visualStyle: "畫面樣式",
     chooseVisualStyle: "選擇畫面樣式", themeMidnight: "深夜穹頂",
     themeParchment: "古典紙頁", themeDawn: "晨光曠野", safeArea: "投影安全區",
+    themeForest: "松林晚禱", themeVesper: "暮色晚霞", themeSnow: "素白講台",
     safeAreaText: "文字已保持在螢幕邊緣以內。", readyToShare: "準備分享", close: "關閉",
     exportIntroBefore: "將以目前主題和分頁產生 ", exportIntroAfter: " 16:9 投影片。",
     pptDescription: "通用簡報檔案 · .pptx", keynoteDescription: "匯入相容檔案 · .pptx",
@@ -193,6 +195,7 @@ const translations = {
     previousSlide: "Previous slide", nextSlide: "Next slide", visualStyle: "Visual style",
     chooseVisualStyle: "Choose visual style", themeMidnight: "Midnight Dome",
     themeParchment: "Classic Parchment", themeDawn: "Desert Dawn", safeArea: "Projection safe area",
+    themeForest: "Evening Pines", themeVesper: "Vesper Dusk", themeSnow: "Clear Lectern",
     safeAreaText: "Text stays inside the safe edges of the screen.", readyToShare: "Ready to share", close: "Close",
     exportIntroBefore: "Create ", exportIntroAfter: " 16:9 slides using the current theme and pagination.",
     pptDescription: "Universal presentation · .pptx", keynoteDescription: "Keynote-compatible import · .pptx",
@@ -267,6 +270,30 @@ const SLIDE_FONTS = { serif: "var(--serif)", sans: "var(--sans)" };
 const CAPTION_SPOTS = ["bottom-left", "bottom-center", "bottom-right",
   "top-left", "top-center", "top-right", "none"];
 // px sizes feed the export canvas; inches feed the PPTX deck layout.
+// Every slide theme in one place: the preview CSS, the export canvas and the
+// stored song value all read from these keys.
+const THEMES = {
+  midnight: { stops: [[0, "#07152f"], [.58, "#112e5a"], [1, "#173e69"]],
+    glow: "rgba(217,181,109,.28)", text: "#ffffff",
+    ornament: "rgba(217,181,109,.34)", caption: "rgba(255,255,255,.55)", scrim: "rgba(6,14,30,.5)" },
+  parchment: { stops: [[0, "#f2ead8"], [1, "#d8c498"]],
+    rule: "rgba(71,55,31,.055)", text: "#26304a",
+    ornament: "rgba(91,65,26,.22)", caption: "rgba(38,48,74,.58)", scrim: "rgba(244,238,226,.58)" },
+  dawn: { stops: [[0, "#4c6884"], [.58, "#b8876d"], [1, "#d9b879"]],
+    glow: "rgba(255,236,185,.34)", text: "#ffffff",
+    ornament: "rgba(217,181,109,.34)", caption: "rgba(255,255,255,.55)", scrim: "rgba(6,14,30,.5)" },
+  forest: { stops: [[0, "#06170f"], [.55, "#0e3423"], [1, "#164c33"]],
+    glow: "rgba(164,208,150,.24)", text: "#ffffff",
+    ornament: "rgba(178,214,163,.26)", caption: "rgba(255,255,255,.55)", scrim: "rgba(5,20,13,.52)" },
+  vesper: { stops: [[0, "#190e2b"], [.55, "#3d1a3e"], [1, "#66274b"]],
+    glow: "rgba(240,178,190,.26)", text: "#ffffff",
+    ornament: "rgba(236,176,196,.28)", caption: "rgba(255,255,255,.55)", scrim: "rgba(18,8,28,.52)" },
+  snow: { stops: [[0, "#ffffff"], [1, "#e9edf3"]],
+    text: "#1b2433", ornament: "rgba(27,36,51,.14)",
+    caption: "rgba(27,36,51,.55)", scrim: "rgba(248,250,252,.6)" }
+};
+const THEME_NAMES = Object.keys(THEMES);
+
 const RATIOS = {
   "16:9": { w: 1600, h: 900, inW: 13.333, inH: 7.5, layout: "LAYOUT_WIDE" },
   "4:3": { w: 1600, h: 1200, inW: 10, inH: 7.5, layout: "LAYOUT_4x3" }
@@ -278,7 +305,7 @@ const state = {
   slideIndex: 0,
   pagination: storedState?.pagination === "blank" ? "blank" : "auto",
   fontSize: Number.isFinite(storedState?.fontSize) ? storedState.fontSize : 44,
-  theme: ["midnight", "parchment", "dawn"].includes(storedState?.theme) ? storedState.theme : "midnight",
+  theme: THEME_NAMES.includes(storedState?.theme) ? storedState.theme : "midnight",
   locale: ["zh-CN", "zh-TW", "en"].includes(storedState?.locale) ? storedState.locale : "zh-CN",
   font: storedState?.font === "sans" ? "sans" : "serif",
   caption: CAPTION_SPOTS.includes(storedState?.caption) ? storedState.caption : "bottom-left",
@@ -494,7 +521,7 @@ function renderEditor() {
     renderPreview();
     return;
   }
-  if (["midnight", "parchment", "dawn"].includes(song.theme)) state.theme = song.theme;
+  if (THEME_NAMES.includes(song.theme)) state.theme = song.theme;
   elements.breadcrumb.textContent = song.title || t("untitledSong");
   state.slideIndex = 0;
   refreshTagSuggestions();
@@ -571,52 +598,39 @@ function renderSlideCanvas(lines, song) {
   const canvasSerif = state.locale === "zh-TW" ? '"Noto Serif TC", "Songti TC", serif' : state.locale === "en" ? 'Georgia, "Times New Roman", serif' : '"Noto Serif SC", "Songti SC", serif';
   const canvasSans = state.locale === "zh-TW" ? '"Noto Sans TC", "PingFang TC", sans-serif' : state.locale === "en" ? 'Inter, Arial, sans-serif' : '"Noto Sans SC", "PingFang SC", sans-serif';
 
-  if (state.theme === "midnight") {
-    const gradient = context.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "#07152f");
-    gradient.addColorStop(0.58, "#112e5a");
-    gradient.addColorStop(1, "#173e69");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
-    const glow = context.createRadialGradient(1280, 155, 0, 1280, 155, 430);
-    glow.addColorStop(0, "rgba(217,181,109,.28)");
-    glow.addColorStop(1, "rgba(217,181,109,0)");
+  const theme = THEMES[state.theme] || THEMES.midnight;
+  const gradient = context.createLinearGradient(0, 0, width, height);
+  theme.stops.forEach(([at, color]) => gradient.addColorStop(at, color));
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, width, height);
+  textColor = theme.text;
+
+  if (theme.glow) {
+    // Proportional, so the highlight lands in the same place at any ratio.
+    const glow = context.createRadialGradient(width * 0.8, height * 0.172, 0,
+      width * 0.8, height * 0.172, width * 0.269);
+    glow.addColorStop(0, theme.glow);
+    glow.addColorStop(1, theme.glow.replace(/[\d.]+\)$/, "0)"));
     context.fillStyle = glow;
     context.fillRect(0, 0, width, height);
-  } else if (state.theme === "parchment") {
-    const gradient = context.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "#f2ead8");
-    gradient.addColorStop(1, "#d8c498");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
-    textColor = "#26304a";
-    context.strokeStyle = "rgba(71,55,31,.055)";
+  }
+
+  if (theme.rule) {
+    context.strokeStyle = theme.rule;
     for (let y = 0; y < height; y += 18) {
       context.beginPath();
       context.moveTo(0, y);
       context.lineTo(width, y + 10);
       context.stroke();
     }
-  } else {
-    const gradient = context.createLinearGradient(0, 0, width, height);
-    gradient.addColorStop(0, "#4c6884");
-    gradient.addColorStop(0.58, "#b8876d");
-    gradient.addColorStop(1, "#d9b879");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, width, height);
-    const haze = context.createRadialGradient(1240, 160, 0, 1240, 160, 520);
-    haze.addColorStop(0, "rgba(255,236,185,.34)");
-    haze.addColorStop(1, "rgba(255,236,185,0)");
-    context.fillStyle = haze;
-    context.fillRect(0, 0, width, height);
   }
 
   context.save();
-  context.strokeStyle = state.theme === "parchment" ? "rgba(91,65,26,.22)" : "rgba(217,181,109,.34)";
+  context.strokeStyle = theme.ornament;
   context.lineWidth = 2;
-  [390, 430, 480].forEach((radius) => {
+  [0.244, 0.269, 0.3].forEach((ratio) => {
     context.beginPath();
-    context.arc(1460, -165, radius, 0, Math.PI * 2);
+    context.arc(width * 0.9125, -height * 0.183, width * ratio, 0, Math.PI * 2);
     context.stroke();
   });
   context.restore();
@@ -627,7 +641,7 @@ function renderSlideCanvas(lines, song) {
     const drawH = backgroundImage.height * scale;
     context.drawImage(backgroundImage, (width - drawW) / 2, (height - drawH) / 2, drawW, drawH);
     // A photo behind text is unreadable without a scrim; match it to the theme's text colour.
-    context.fillStyle = state.theme === "parchment" ? "rgba(244,238,226,.58)" : "rgba(6,14,30,.5)";
+    context.fillStyle = theme.scrim;
     context.fillRect(0, 0, width, height);
   }
 
@@ -657,7 +671,7 @@ function renderSlideCanvas(lines, song) {
       : state.caption.endsWith("center") ? "center" : "left";
     context.font = `500 22px ${state.font === "sans" ? canvasSans : canvasSerif}`;
     context.textAlign = align;
-    context.fillStyle = state.theme === "parchment" ? "rgba(38,48,74,.58)" : "rgba(255,255,255,.55)";
+    context.fillStyle = theme.caption;
     const capX = align === "right" ? width - 80 : align === "center" ? width / 2 : 80;
     context.fillText(slideCaption(song), capX,
       state.caption.startsWith("top") ? height * 0.078 : height * 0.931);
@@ -834,7 +848,7 @@ function rowsToSongs(rows = []) {
       author: row[2] || "",
       tags: row[3] || "",
       lyrics: row[4] || "",
-      theme: ["midnight", "parchment", "dawn"].includes(row[5]) ? row[5] : "midnight",
+      theme: THEME_NAMES.includes(row[5]) ? row[5] : "midnight",
       updatedAt: Date.parse(row[6]) || 0,
       updatedBy: row[7] || "",
       version: Number(row[8]) || 0,
@@ -1184,7 +1198,8 @@ function activateNav(button, panel, field) {
 }
 
 function applyAppearance() {
-  document.documentElement.dataset.theme = state.appearance;
+  // data-appearance, not data-theme: the slide-theme buttons own [data-theme].
+  document.documentElement.dataset.appearance = state.appearance;
   elements.appearanceButton.setAttribute("aria-pressed", String(state.appearance === "light"));
 }
 
