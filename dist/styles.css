@@ -301,6 +301,8 @@ button { color: inherit; }
   display: flex;
   flex-direction: column;
 }
+/* only the list may shrink; the heading, search box and meta keep their size */
+.library-panel > :not(.song-list) { flex: none; }
 
 .panel-heading,
 .preview-heading {
