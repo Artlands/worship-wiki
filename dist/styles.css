@@ -133,8 +133,7 @@ button { color: inherit; }
   background: var(--topbar);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 10;
 }
 
@@ -317,8 +316,8 @@ button { color: inherit; }
   border-right: 1px solid var(--line);
   /* pin to the viewport so the list scrolls on its own, not with the page */
   position: sticky;
-  top: 88px;
-  height: calc(100vh - 88px);
+  top: 0;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
