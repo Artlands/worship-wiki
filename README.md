@@ -174,3 +174,11 @@ The read-only state on the page is only a UI hint; actual write permission is en
 ## Technical notes
 
 The site needs no build step. PPTX and PDF are generated in the browser by PptxGenJS and jsPDF respectively; both libraries are fetched from the network on the first export.
+
+## Licence
+
+[Apache License 2.0](LICENSE), copyright 2026 Jie Li. You may use, modify, and
+redistribute this project, including commercially, provided you keep the notice
+and state your changes. It comes with no warranty. PptxGenJS and jsPDF are
+fetched at runtime and carry their own licences, as does whatever song content
+you put in your own Sheet.
