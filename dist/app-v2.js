@@ -96,6 +96,10 @@ const STORAGE_KEY = "worship-wiki-v2";
 // Backgrounds live on this device only and are deliberately never written to
 // the Sheet. Their own key keeps an oversized image from taking songs down.
 const BACKGROUND_KEY = "worship-wiki-background-v1";
+// This is only an email address used to preselect the account on the next
+// Google sign-in. Never put an access token or an authenticated role in
+// browser storage: GIS intentionally keeps tokens short-lived and in memory.
+const GOOGLE_LOGIN_HINT_KEY = "worship-wiki-google-login-hint-v1";
 
 const translations = {
   "zh-CN": {
@@ -334,6 +338,20 @@ function loadStoredState() {
   }
 }
 
+function loadGoogleLoginHint() {
+  try { return String(localStorage.getItem(GOOGLE_LOGIN_HINT_KEY) || "").trim(); }
+  catch (_error) { return ""; }
+}
+
+function storeGoogleLoginHint(email) {
+  const hint = String(email || "").trim();
+  try {
+    if (hint) localStorage.setItem(GOOGLE_LOGIN_HINT_KEY, hint);
+    else localStorage.removeItem(GOOGLE_LOGIN_HINT_KEY);
+  } catch (_error) { /* Login can still proceed when storage is unavailable. */ }
+  return hint;
+}
+
 const storedState = loadStoredState();
 const storedSongs = storedState?.songs || starterSongs;
 const storedActiveId = storedState?.activeId;
@@ -413,6 +431,7 @@ const backend = {
   role: "local",
   accessToken: "",
   userEmail: "",
+  loginHint: loadGoogleLoginHint(),
   tokenClient: null,
   dirtySongIds: new Set(),
   localDraft: false,
@@ -621,6 +640,9 @@ function renderEditor() {
     renderPreview();
     return;
   }
+  // The sheet stores a theme per song. Restore it whenever the selection
+  // changes so previews and exports match the saved library entry.
+  if (THEME_NAMES.includes(song.theme)) state.theme = song.theme;
   elements.breadcrumb.textContent = song.title || t("untitledSong");
   state.slideIndex = 0;
   refreshTagSuggestions();
@@ -672,7 +694,7 @@ function updateSong(field, value, shouldRender = true) {
   if (field === "title") elements.breadcrumb.textContent = value || t("untitledSong");
   if (shouldRender) renderPreview();
   scheduleSave();
-  if (["title", "author", "lyrics"].includes(field)) markSongDirty(song.id);
+  if (["title", "author", "tags", "lyrics"].includes(field)) markSongDirty(song.id);
 }
 
 function showToast(message) {
@@ -1147,7 +1169,21 @@ async function deleteActiveSong() {
   const label = song.title || t("untitledSong");
   if (!window.confirm(t("confirmDelete").replace("{title}", label))) return;
 
-  // Drop the pending-save mark, or Save would re-create the row we are removing.
+  if (song.rowNumber && backend.role === "editor" && backend.accessToken) {
+    try {
+      // Blank the row instead of deleting it: saveSongRemote() addresses rows
+      // by rowNumber, and removing a row would shift every song below it.
+      await writeSheetRange(songRowRange(song.rowNumber), [Array(9).fill("")], backend.accessToken);
+    } catch (error) {
+      // Keep the local song intact when the remote removal fails; otherwise a
+      // later sync would silently bring it back with no way to retry.
+      console.warn("Cloud delete failed", error);
+      showToast(t("cloudSaveFailed"));
+      return;
+    }
+  }
+
+  // Drop the pending-save mark, or Save would re-create the row we removed.
   backend.dirtySongIds.delete(song.id);
 
   state.songs = state.songs.filter((item) => item.id !== song.id);
@@ -1158,15 +1194,6 @@ async function deleteActiveSong() {
   refreshSaveState();
   showToast(t("songDeleted"));
 
-  if (!song.rowNumber || backend.role !== "editor" || !backend.accessToken) return;
-  try {
-    // Blank the row instead of deleting it: saveSongRemote() addresses rows by
-    // rowNumber, and removing a row would shift every song below it.
-    await writeSheetRange(songRowRange(song.rowNumber), [Array(9).fill("")], backend.accessToken);
-  } catch (error) {
-    console.warn("Cloud delete failed", error);
-    showToast(t("cloudSaveFailed"));
-  }
 }
 
 // Edits stay local until the editor presses Save; this only records what is pending.
@@ -1237,7 +1264,12 @@ async function requestGoogleAccessToken() {
       },
       error_callback(error) { reject(new Error(error?.type || "Google sign-in failed")); }
     });
-    backend.tokenClient.requestAccessToken({ prompt: "consent" });
+    // An empty prompt asks for consent only when it has not already been
+    // granted. The stored hint avoids making a returning user select the same
+    // account again, while Google still issues a fresh, short-lived token.
+    const options = { prompt: "" };
+    if (backend.loginHint) options.login_hint = backend.loginHint;
+    backend.tokenClient.requestAccessToken(options);
   });
 }
 
@@ -1266,6 +1298,7 @@ async function signInWithGoogle() {
     const accessToken = await requestGoogleAccessToken();
     backend.accessToken = accessToken;
     backend.userEmail = await readGoogleUserEmail(accessToken);
+    backend.loginHint = storeGoogleLoginHint(backend.userEmail);
     try {
       await verifyEditorAccess(accessToken);
       setAccessRole("editor");
@@ -1284,8 +1317,13 @@ async function signInWithGoogle() {
 }
 
 function leaveEditMode() {
+  // Preserve unsaved editor changes as a local draft instead of allowing the
+  // next background refresh to replace them with the cloud library.
+  if (backend.dirtySongIds.size) backend.localDraft = true;
   backend.accessToken = "";
   backend.userEmail = "";
+  // Leaving is also the explicit way to choose a different Google account.
+  backend.loginHint = storeGoogleLoginHint("");
   backend.dirtySongIds.clear();
   setAccessRole("guest");
   elements.accessDialog.close();
@@ -1317,7 +1355,7 @@ async function initializeBackend() {
 
 function createSong({ title = t("untitledSong"), author = "", lyrics = t("firstLyricLine") } = {}) {
   const id = `song-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
-  state.songs.unshift({ id, title, author, tags: t("newTag"), lyrics, updatedAt: Date.now() });
+  state.songs.unshift({ id, title, author, tags: t("newTag"), lyrics, theme: state.theme, updatedAt: Date.now() });
   state.activeId = id;
   renderLibrary();
   renderEditor();
@@ -1359,6 +1397,12 @@ $$('[data-mode]').forEach((button) => button.addEventListener("click", () => {
 }));
 $$('[data-theme]').forEach((button) => button.addEventListener("click", () => {
   state.theme = button.dataset.theme;
+  const song = activeSong();
+  if (song) {
+    song.theme = state.theme;
+    song.updatedAt = Date.now();
+    markSongDirty(song.id);
+  }
   renderControls();
   renderPreview();
   saveNow();

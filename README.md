@@ -97,7 +97,7 @@ email
 https://www.googleapis.com/auth/spreadsheets
 ```
 
-Leave the app in **Testing**. Publishing to Production with the `spreadsheets` scope triggers Google's verification review, which this app does not need: it requests a fresh access token on every sign-in and stores no refresh token, so the 7-day expiry that normally makes Testing mode painful never applies.
+Leave the app in **Testing**. Publishing to Production with the `spreadsheets` scope triggers Google's verification review, which this app does not need: the browser obtains a fresh, short-lived access token each time it connects and never stores a refresh token, so the 7-day expiry that normally makes Testing mode painful never applies.
 
 **Create the OAuth client.** Go to **Credentials → Create credentials → OAuth client ID → Web application**. Under **Authorized JavaScript origins**, add every origin the site is served from:
 
@@ -159,6 +159,8 @@ Then have them sign in.
 4. The admin adds that address in both places described in [Adding an editor](#adding-an-editor).
 5. After signing in again the user can edit, and changes sync to the Sheet automatically.
 
+The browser remembers only the last successful email address as an account hint, so a returning user is not asked to pick the same account or grant the same consent again. It does **not** store an access token, refresh token, or editor role. Google issues a fresh short-lived token after the user clicks **Sign in with Google**, and the app checks Sheet permission again. Use **Leave editing mode** to clear the remembered account hint before choosing a different Google account.
+
 The read-only state on the page is only a UI hint; actual write permission is enforced by the Google Drive file ACL.
 
 ## Troubleshooting sign-in
@@ -168,6 +170,7 @@ The read-only state on the page is only a UI hint; actual write permission is en
 | Popup closes immediately, console names an origin | The site's origin is missing from **Authorized JavaScript origins**, or registered as `http://` while the site now serves `https://` |
 | `Error 403: access_denied` | The account is not in **Test users** |
 | Signs in, but changes never reach the Sheet | The account is not an **Editor** on the Sheet, so edits stay local |
+| Google asks for consent or an account again on every visit | Ensure the site is using the current `app-v2.js`; it reuses the approved account as a hint, but Google may still show its own sign-in screen if that Google session has ended or cookies are blocked |
 | Signed-out visitors see an empty library | Sheet general access is not **Anyone with the link → Viewer**, or the API key's referrer restriction excludes the site |
 | Live site behaves as local-draft | `WORSHIP_WIKI_CONFIG_JS` is unset, so the deploy shipped no `config.js` |
 
